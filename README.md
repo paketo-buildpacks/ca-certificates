@@ -2,7 +2,7 @@
 The Paketo CA Certificates Buildpack is a Cloud Native Buildpack that adds custom CA certificates to a build and a created image.
 
 ## Behavior
-This buildpack will participate all the following conditions are met
+This buildpack always participates. 
 
 *
 
