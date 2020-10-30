@@ -47,7 +47,7 @@ func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) 
 					{Name: "ca-certificates"},
 				},
 			},
-			{},// always contribute runtime helper
+			{}, // always contribute runtime helper
 		},
 	}, nil
 }

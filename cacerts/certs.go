@@ -21,8 +21,8 @@ import (
 // (see https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_default_verify_paths.html)
 const (
 	// EnvCAPath is the environment variable that can be used to set CApath (see
-	EnvCAPath     string = "SSL_CERT_DIR" // EnvCAPath
-	EnvCAFile     string = "SSL_CERT_FILE"
+	EnvCAPath string = "SSL_CERT_DIR" // EnvCAPath
+	EnvCAFile string = "SSL_CERT_FILE"
 
 	// DefaultCAFile provides the default CAfile on ubuntu
 	DefaultCAFile string = "/etc/ssl/certs/ca-certificates.crt"
@@ -35,28 +35,26 @@ const (
 //
 // These links are used by openssl to lookup a given CA by subject name.
 func GenerateHashLinks(dir string, certPaths []string) error {
-	hashes := map[string][]string{}
+	hashes := map[uint32][]string{}
 	sort.Strings(certPaths)
 	for _, path := range certPaths {
 		raw, err := ioutil.ReadFile(path)
-		block, _ := pem.Decode(raw)
-		if block == nil {
-			return fmt.Errorf("failed to decode PEM from file at path %q", path)
-		}
-		hashBytes, err := SubjectNameHash(block)
 		if err != nil {
-			return fmt.Errorf("failed compute subject name hash for cert at path %q: %s", path, err)
+			return fmt.Errorf("failed to read file at path %q\n%w", path, err)
 		}
-		hash := fmt.Sprintf("%08x", hashBytes)
-		if _, ok := hashes[hash]; ok {
-			hashes[hash] = append(hashes[hash], path)
-			continue
+		cert, err := decodeOneCert(raw)
+		if err != nil {
+			return fmt.Errorf("failed to decode certificate from file at path %q\n%w", path, err)
 		}
-		hashes[hash] = []string{path}
+		hash, err := SubjectNameHash(cert)
+		if err != nil {
+			return fmt.Errorf("failed compute subject name hash for cert at path %q\n%w", path, err)
+		}
+		hashes[hash] = append(hashes[hash], path)
 	}
 	for hash, paths := range hashes {
 		for i, path := range paths {
-			name := fmt.Sprintf("%s.%d", hash, i)
+			name := fmt.Sprintf("%08x.%d", hash, i)
 			if err := os.Symlink(path, filepath.Join(dir, name)); err != nil {
 				return err
 			}
@@ -65,14 +63,26 @@ func GenerateHashLinks(dir string, certPaths []string) error {
 	return nil
 }
 
-// SubjectNameHash is a reimplementation of the X509_subject_name_hash in openssl. It computes the SHA-1
-// of the canonical encoding of the subject name and returns the 32-bit integer represented by the first
-// four bytes of the hash using little-endian byte order.
-func SubjectNameHash(block *pem.Block) (uint32, error) {
+func decodeOneCert(raw []byte) (*x509.Certificate, error) {
+	block, rest := pem.Decode(raw)
+	if block == nil {
+		return nil, errors.New("failed find PEM data")
+	}
+	extra, rest := pem.Decode(rest)
+	if extra != nil {
+		return nil, errors.New("found multiple PEM blocks, expected exactly one")
+	}
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return 0, fmt.Errorf("failed to parse certficate\n%w", err)
+		return nil, fmt.Errorf("failed to parse certficate\n%w", err)
 	}
+	return cert, nil
+}
+
+// SubjectNameHash is a reimplementation of the X509_subject_name_hash in openssl. It computes the SHA-1
+// of the canonical encoding of the certificate's subject name and returns the 32-bit integer represented by the first
+// four bytes of the hash using little-endian byte order.
+func SubjectNameHash(cert *x509.Certificate) (uint32, error) {
 	name, err := CanonicalName(cert.RawSubject)
 	if err != nil {
 		return 0, fmt.Errorf("failed to compute canonical subject name\n%w", err)
@@ -86,9 +96,13 @@ func SubjectNameHash(block *pem.Block) (uint32, error) {
 	return binary.LittleEndian.Uint32(sum[:4]), nil
 }
 
-// Similar to pkix.AttributeTypeAndValue but includes tag to ensure all values are marshaled as
+// canonicalSET holds a of canonicalATVs. Suffix SET ensures it is marshaled as a set rather than a sequence
+// by asn1.Marshal.
+type canonicalSET []canonicalATV
+
+// canonicalATV is similar to pkix.AttributeTypeAndValue but includes tag to ensure all values are marshaled as
 // ASN.1, UTF8String values
-type canonATV struct {
+type canonicalATV struct {
 	Type  asn1.ObjectIdentifier
 	Value string `asn1:"utf8"`
 }
@@ -106,18 +120,18 @@ func CanonicalName(name []byte) ([]byte, error) {
 	}
 	var result []byte
 	for _, origSet := range origSeq {
-		var canonSet []canonATV
+		var canonSet canonicalSET
 		for _, origATV := range origSet {
 			origVal, ok := origATV.Value.(string)
 			if !ok {
 				return nil, errors.New("got unexpected non-string value")
 			}
-			canonSet = append(canonSet, canonATV{
+			canonSet = append(canonSet, canonicalATV{
 				Type:  origATV.Type,
 				Value: CanonicalString(origVal),
 			})
 		}
-		setBytes, err := asn1.MarshalWithParams(canonSet, "set")
+		setBytes, err := asn1.Marshal(canonSet)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal canonical name\n%w", err)
 		}
@@ -132,7 +146,7 @@ func CanonicalName(name []byte) ([]byte, error) {
 // a single ' '.
 //
 // This is a reimplementation of the asn1_string_canon in openssl
-func CanonicalString(s string)  string{
+func CanonicalString(s string) string {
 	s = strings.TrimLeft(s, " \f\t\n\n\v")
 	s = strings.TrimRight(s, " \f\t\n\n\v")
 	s = strings.ToLower(s)
