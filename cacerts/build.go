@@ -1,6 +1,7 @@
 package cacerts
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/buildpacks/libcnb"
@@ -16,7 +17,7 @@ type Build struct {
 // ca-cert-helper executable.
 //
 // If the buildpack plan contains an entry with name "ca-certificates" Build will contribute a build layer
-// the trusts the ca certificates at the paths provided in the plan entry metadata.
+// that adds the ca certificates at the paths provided in the plan entry metadata to the system truststore.
 func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 	var result libcnb.BuildResult
 
@@ -30,7 +31,9 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 		if err != nil {
 			return libcnb.BuildResult{}, fmt.Errorf("failed to decode CA certificate paths from plan entry:\n%w", err)
 		}
-		result.Layers = append(result.Layers, NewLayer(certPaths))
+		layer := NewLayer(certPaths)
+		layer.Logger = b.Logger
+		result.Layers = append(result.Layers, layer)
 	}
 
 	h := libpak.NewHelperLayerContributor(
@@ -47,18 +50,18 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 func pathFromEntryMetadata(md map[string]interface{}) ([]string, error) {
 	rawPaths, ok := md["paths"]
 	if !ok {
-		return nil, fmt.Errorf("ca-certificates build plan entry is missing required metadata key \"dirs\"")
+		return nil, errors.New("ca-certificates build plan entry is missing required metadata key \"dirs\"")
 	}
 	pathArr, ok := rawPaths.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("expected \"paths\" to be of type []interface{}")
+		return nil, errors.New("expected \"paths\" to be of type []interface{}")
 	}
 	certPaths := make([]string, len(pathArr))
 	for i, path := range pathArr {
 		var ok bool
 		certPaths[i], ok = path.(string)
 		if !ok {
-			return nil, fmt.Errorf("expected each item in \"paths\" to be of type string")
+			return nil, errors.New("expected each item in \"paths\" to be of type string")
 		}
 	}
 	return certPaths, nil

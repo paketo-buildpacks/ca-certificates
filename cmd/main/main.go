@@ -27,7 +27,7 @@ import (
 
 func main() {
 	libpak.Main(
-		cacerts.Detect{},
+		cacerts.Detect{Logger: bard.NewLogger(os.Stdout)},
 		cacerts.Build{Logger: bard.NewLogger(os.Stdout)},
 	)
 }

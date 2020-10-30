@@ -1,6 +1,7 @@
 package cacerts
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -10,34 +11,35 @@ import (
 )
 
 type Layer struct {
-	CertPaths        []string
-	LayerContributor libpak.LayerContributor
-	LinkCerts        func(dir string, certPaths []string) error
-	Logger           bard.Logger
+	CertPaths         []string
+	LayerContributor  libpak.LayerContributor
+	GenerateHashLinks func(dir string, certPaths []string) error
+	Logger            bard.Logger
 }
 
 func NewLayer(paths []string) *Layer {
 	return &Layer{
-		CertPaths:        paths,
-		LayerContributor: libpak.NewLayerContributor("CA Certificates", map[string]interface{}{}),
-		LinkCerts:        GenerateHashLinks,
+		CertPaths:         paths,
+		LayerContributor:  libpak.NewLayerContributor("CA Certificates", map[string]interface{}{}),
+		GenerateHashLinks: GenerateHashLinks,
 	}
 }
 
 // Contribute create build layer adding the certificates at Layer.CAPaths to the set of trusted CAs.
-func (v Layer) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
-	v.LayerContributor.Logger = v.Logger
+func (l Layer) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
+	l.LayerContributor.Logger = l.Logger
 
-	return v.LayerContributor.Contribute(layer, func() (libcnb.Layer, error) {
+	return l.LayerContributor.Contribute(layer, func() (libcnb.Layer, error) {
 		layer.BuildEnvironment = libcnb.Environment{}
 
 		certsDir := filepath.Join(layer.Path, "certs")
 		if err := os.Mkdir(certsDir, 0777); err != nil {
-			return libcnb.Layer{}, err
+			return libcnb.Layer{}, fmt.Errorf("failed to create directory %q\n%w", certsDir, err)
 		}
-		if err := GenerateHashLinks(certsDir, v.CertPaths); err != nil {
-			return libcnb.Layer{}, err
+		if err := l.GenerateHashLinks(certsDir, l.CertPaths); err != nil {
+			return libcnb.Layer{}, fmt.Errorf("failed to generate certificate symlinks\n%w", err)
 		}
+		l.Logger.Bodyf("Added %d additional CA certificate(s) to system truststore", len(l.CertPaths))
 
 		layer.BuildEnvironment.Append(
 			EnvCAPath,

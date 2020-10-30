@@ -72,8 +72,6 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			contributor, ok := result.Layers[0].(*cacerts.Layer)
 			Expect(ok).To(BeTrue())
 			Expect(len(contributor.CertPaths)).To(Equal(3))
-			// TODO absolute paths
-			// TODO sorts
 			Expect(contributor.CertPaths).To(ConsistOf([]string{
 				"some/path/cert1.pem",
 				"some/path/cert2.pem",

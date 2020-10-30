@@ -26,6 +26,7 @@ func NewExecD(bindings libcnb.Bindings) *ExecD {
 	}
 }
 
+// Execute adds certificates from bindings of type "ca-certificates" to the system truststore at launch time.
 func (e *ExecD) Execute() (map[string]string, error) {
 	env := map[string]string{}
 	paths := getsCertsFromBindings(e.Bindings)
@@ -39,6 +40,8 @@ func (e *ExecD) Execute() (map[string]string, error) {
 	if err := e.GenerateHashLinks(certDir, paths); err != nil {
 		return nil, fmt.Errorf("failed to generate ca certficate symlinks\n%w", err)
 	}
+	e.Logger.Infof("Added %d additional CA certificate(s) to system truststore", len(paths))
+
 	if v := e.GetEnv(EnvCAPath); v == "" {
 		env[EnvCAPath] = certDir
 	} else {
