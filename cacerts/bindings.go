@@ -14,21 +14,29 @@
  * limitations under the License.
  */
 
-package cacerts_test
+package cacerts
 
 import (
-	"testing"
+	"sort"
 
-	"github.com/sclevine/spec"
-	"github.com/sclevine/spec/report"
+	"github.com/buildpacks/libcnb"
+
+	"github.com/paketo-buildpacks/libpak/bindings"
 )
 
-func TestUnit(t *testing.T) {
-	suite := spec.New("cacerts", spec.Report(report.Terminal{}))
-	suite("Detect", testDetect)
-	suite("Build", testBuild)
-	suite("ExecD", testExecD)
-	suite("Certs", testCerts)
-	suite("TrustedCAs", testLayer)
-	suite.Run(t)
+const (
+	BindingType = "ca-certificates" // BindingType is used to resolve bindings containing CA certificates
+)
+
+func getsCertsFromBindings(binds libcnb.Bindings) []string {
+	var paths []string
+	for _, bind := range bindings.Resolve(binds, bindings.OfType(BindingType)) {
+		for k, _ := range bind.Secret {
+			if path, ok := bind.SecretFilePath(k); ok {
+				paths = append(paths, path)
+			}
+		}
+	}
+	sort.Strings(paths)
+	return paths
 }

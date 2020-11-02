@@ -1,39 +1,55 @@
+/*
+ * Copyright 2018-2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cacerts
 
 import (
-	"path/filepath"
-	"sort"
-	"strings"
-
 	"github.com/buildpacks/libcnb"
-	"github.com/paketo-buildpacks/libpak/bard"
 )
 
-type Detect struct {
-	Logger bard.Logger
-}
+type Detect struct{}
 
 const (
-	BindingType = "ca-certificates"
+	// PlanEntryCACertificates if present in the build plan indicates that certificates should be added to the
+	// truststore at build time.
+	PlanEntryCACertificates = "ca-certificates"
+	// PlanEntryCACertHelper if present in the build plan indicates the the ca-cert-helper binary should be
+	// contributed to the app image.
+	PlanEntryCACertHelper = "ca-cert-helper"
 )
 
 // Detect always passes and optionally provides ca-certificates. If there is a binding of
-// type "ca-certficates" Detect also requires ca-certificates and provides an array of cerficate paths in the
+// type "ca-certificates" Detect also requires ca-certificates and provides an array of certificate paths in the
 // plan entry metadata.
-func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
+func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
 	paths := getsCertsFromBindings(context.Platform.Bindings)
 	if len(paths) > 0 {
 		return libcnb.DetectResult{Pass: true, Plans: []libcnb.BuildPlan{{
 			Provides: []libcnb.BuildPlanProvide{
-				{Name: "ca-certificates"},
+				{Name: PlanEntryCACertificates},
+				{Name: PlanEntryCACertHelper},
 			},
 			Requires: []libcnb.BuildPlanRequire{
 				{
-					Name: "ca-certificates",
+					Name: PlanEntryCACertificates,
 					Metadata: map[string]interface{}{
 						"paths": paths,
 					},
 				},
+				{Name: PlanEntryCACertHelper},
 			},
 		}}}, nil
 	}
@@ -43,23 +59,21 @@ func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error
 		Plans: []libcnb.BuildPlan{
 			{
 				Provides: []libcnb.BuildPlanProvide{
-					{Name: "ca-certificates"},
+					{Name: PlanEntryCACertificates},
+					{Name: PlanEntryCACertHelper},
+				},
+				Requires: []libcnb.BuildPlanRequire{
+					{Name: PlanEntryCACertHelper},
 				},
 			},
-			{}, // always contribute runtime helper
+			{
+				Provides: []libcnb.BuildPlanProvide{
+					{Name: PlanEntryCACertHelper},
+				},
+				Requires: []libcnb.BuildPlanRequire{
+					{Name: PlanEntryCACertHelper},
+				},
+			},
 		},
 	}, nil
-}
-
-func getsCertsFromBindings(bindings libcnb.Bindings) []string {
-	var paths []string
-	for _, bind := range bindings {
-		if strings.TrimSpace(strings.ToLower(bind.Type)) == strings.TrimSpace(strings.ToLower(BindingType)) {
-			for k := range bind.Secret {
-				paths = append(paths, filepath.Join(bind.Path, k))
-			}
-		}
-	}
-	sort.Strings(paths)
-	return paths
 }

@@ -1,10 +1,29 @@
+/*
+ * Copyright 2018-2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cacerts
 
 import (
 	"errors"
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/buildpacks/libcnb"
+
 	"github.com/paketo-buildpacks/libpak"
 	"github.com/paketo-buildpacks/libpak/bard"
 )
@@ -23,31 +42,44 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 
 	b.Logger.Title(context.Buildpack)
 
+	var certPaths []string
+	var contributeHelper bool
 	for _, e := range context.Plan.Entries {
-		if e.Name != "ca-certificates" {
-			return libcnb.BuildResult{}, fmt.Errorf("received unexpected build plan entry %q", e.Name)
+		switch strings.ToLower(e.Name) {
+		case PlanEntryCACertificates:
+			paths, err := pathsFromEntryMetadata(e.Metadata)
+			if err != nil {
+				return libcnb.BuildResult{}, fmt.Errorf("failed to decode CA certificate paths from plan entry:\n%w", err)
+			}
+			certPaths = append(certPaths, paths...)
+		case PlanEntryCACertHelper:
+			contributeHelper = true
+		default:
+			return libcnb.BuildResult{}, fmt.Errorf("received unexpected buildpack plan entry %q", e.Name)
 		}
-		certPaths, err := pathFromEntryMetadata(e.Metadata)
-		if err != nil {
-			return libcnb.BuildResult{}, fmt.Errorf("failed to decode CA certificate paths from plan entry:\n%w", err)
-		}
-		layer := NewLayer(certPaths)
+	}
+
+	if len(certPaths) > 0 {
+		sort.Strings(certPaths)
+		layer := NewTrustedCAs(certPaths)
 		layer.Logger = b.Logger
 		result.Layers = append(result.Layers, layer)
 	}
 
-	h := libpak.NewHelperLayerContributor(
-		context.Buildpack,
-		&context.Plan,
-		"ca-cert-helper",
-	)
-	h.Logger = b.Logger
-	result.Layers = append(result.Layers, h)
+	if contributeHelper {
+		h := libpak.NewHelperLayerContributor(
+			context.Buildpack,
+			&context.Plan,
+			"ca-cert-helper",
+		)
+		h.Logger = b.Logger
+		result.Layers = append(result.Layers, h)
+	}
 
 	return result, nil
 }
 
-func pathFromEntryMetadata(md map[string]interface{}) ([]string, error) {
+func pathsFromEntryMetadata(md map[string]interface{}) ([]string, error) {
 	rawPaths, ok := md["paths"]
 	if !ok {
 		return nil, errors.New("ca-certificates build plan entry is missing required metadata key \"dirs\"")

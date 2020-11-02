@@ -8,3 +8,7 @@ require (
 	github.com/paketo-buildpacks/libpak v1.48.0
 	github.com/sclevine/spec v1.4.0
 )
+
+replace (
+	github.com/paketo-buildpacks/libpak v1.48.0 => ../libpak
+)

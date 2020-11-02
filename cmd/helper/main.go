@@ -17,6 +17,7 @@ func main() {
 		if err != nil {
 			return fmt.Errorf("unable to read bindings from environment\n%w", err)
 		}
+
 		cacertHelper := cacerts.NewExecD(bindings)
 		cacertHelper.Logger = bard.NewLogger(os.Stdout)
 		return sherpa.Helpers(map[string]sherpa.ExecD{

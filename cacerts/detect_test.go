@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018-2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cacerts_test
 
 import (
@@ -52,13 +68,14 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			}
 		})
 
-		it("provides and requires ca-certificates", func() {
+		it("provides and requires ca-certificates and ca-cert-helper", func() {
 			Expect(detect.Detect(ctx)).To(Equal(libcnb.DetectResult{
 				Pass: true,
 				Plans: []libcnb.BuildPlan{
 					{
 						Provides: []libcnb.BuildPlanProvide{
 							{Name: "ca-certificates"},
+							{Name: "ca-cert-helper"},
 						},
 						Requires: []libcnb.BuildPlanRequire{
 							{
@@ -71,6 +88,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 									},
 								},
 							},
+							{Name: "ca-cert-helper"},
 						},
 					},
 				},
@@ -79,16 +97,27 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("Binding does not exist with type ca-certificates", func() {
-		it("optionally provides ca-certificates", func() {
+		it("provides ca-certificates and provides and requires ca-cert-helper", func() {
 			Expect(detect.Detect(ctx)).To(Equal(libcnb.DetectResult{
 				Pass: true,
 				Plans: []libcnb.BuildPlan{
 					{
 						Provides: []libcnb.BuildPlanProvide{
 							{Name: "ca-certificates"},
+							{Name: "ca-cert-helper"},
+						},
+						Requires: []libcnb.BuildPlanRequire{
+							{Name: "ca-cert-helper"},
 						},
 					},
-					{}, // always contributes helper
+					{
+						Provides: []libcnb.BuildPlanProvide{
+							{Name: "ca-cert-helper"},
+						},
+						Requires: []libcnb.BuildPlanRequire{
+							{Name: "ca-cert-helper"},
+						},
+					},
 				},
 			}))
 		})
