@@ -29,6 +29,6 @@ func TestUnit(t *testing.T) {
 	suite("Build", testBuild)
 	suite("ExecD", testExecD)
 	suite("Certs", testCerts)
-	suite("TrustedCAs", testLayer)
+	suite("TrustedCACerts", testTrustedCACerts)
 	suite.Run(t)
 }

@@ -37,21 +37,14 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 	it.Before(func() {
 		ctx.Platform.Environment = map[string]string{}
-		ctx.Buildpack.Metadata = map[string]interface{}{
-			"configurations": []map[string]interface{}{
-				{
-					"name":    "BP_RUNTIME_CACERTS_ENABLED",
-					"default": "true",
-				},
-			},
-		}
 	})
 
 	context("Binding exists with type ca-certificates", func() {
+		var result libcnb.DetectResult
 		it.Before(func() {
 			ctx.Platform.Bindings = []libcnb.Binding{
 				{
-					Type: "ca-certificates",
+					Type: cacerts.BindingType,
 					Path: "some-path",
 					Secret: map[string]string{
 						"cert1.pem": "",
@@ -59,36 +52,39 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					},
 				},
 				{
-					Type: "ca-certificates",
+					Type: cacerts.BindingType,
 					Path: "other-path",
 					Secret: map[string]string{
 						"cert3.pem": "",
 					},
 				},
 			}
+			var err error
+			result, err = detect.Detect(ctx)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
-		it("provides and requires ca-certificates and ca-cert-helper", func() {
-			Expect(detect.Detect(ctx)).To(Equal(libcnb.DetectResult{
-				Pass: true,
-				Plans: []libcnb.BuildPlan{
+		it("always passes", func() {
+			Expect(result.Pass).To(BeTrue())
+		})
+
+		it("first plan provides and requires ca-certificate", func() {
+			Expect(len(result.Plans)).To(BeNumerically(">=", 1))
+			Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
+				Provides: []libcnb.BuildPlanProvide{
+					{Name: cacerts.PlanEntryCACertsHelper},
+					{Name: cacerts.PlanEntryCACerts},
+				},
+				Requires: []libcnb.BuildPlanRequire{
+					{Name: cacerts.PlanEntryCACertsHelper},
 					{
-						Provides: []libcnb.BuildPlanProvide{
-							{Name: "ca-certificates"},
-							{Name: "ca-cert-helper"},
-						},
-						Requires: []libcnb.BuildPlanRequire{
-							{
-								Name: "ca-certificates",
-								Metadata: map[string]interface{}{
-									"paths": []string{
-										filepath.Join("other-path", "cert3.pem"),
-										filepath.Join("some-path", "cert1.pem"),
-										filepath.Join("some-path", "cert2.pem"),
-									},
-								},
+						Name: cacerts.PlanEntryCACerts,
+						Metadata: map[string]interface{}{
+							"paths": []string{
+								filepath.Join("other-path", "cert3.pem"),
+								filepath.Join("some-path", "cert1.pem"),
+								filepath.Join("some-path", "cert2.pem"),
 							},
-							{Name: "ca-cert-helper"},
 						},
 					},
 				},
@@ -97,27 +93,38 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 	})
 
 	context("Binding does not exist with type ca-certificates", func() {
-		it("provides ca-certificates and provides and requires ca-cert-helper", func() {
-			Expect(detect.Detect(ctx)).To(Equal(libcnb.DetectResult{
-				Pass: true,
-				Plans: []libcnb.BuildPlan{
-					{
-						Provides: []libcnb.BuildPlanProvide{
-							{Name: "ca-certificates"},
-							{Name: "ca-cert-helper"},
-						},
-						Requires: []libcnb.BuildPlanRequire{
-							{Name: "ca-cert-helper"},
-						},
-					},
-					{
-						Provides: []libcnb.BuildPlanProvide{
-							{Name: "ca-cert-helper"},
-						},
-						Requires: []libcnb.BuildPlanRequire{
-							{Name: "ca-cert-helper"},
-						},
-					},
+		var result libcnb.DetectResult
+		it.Before(func() {
+			var err error
+			result, err = detect.Detect(ctx)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		it("always passes", func() {
+			Expect(result.Pass).To(BeTrue())
+		})
+
+		it("first plan provides ca-certificates", func() {
+			Expect(len(result.Plans)).To(BeNumerically(">=", 1))
+			Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
+				Provides: []libcnb.BuildPlanProvide{
+					{Name: cacerts.PlanEntryCACertsHelper},
+					{Name: cacerts.PlanEntryCACerts},
+				},
+				Requires: []libcnb.BuildPlanRequire{
+					{Name: cacerts.PlanEntryCACertsHelper},
+				},
+			}))
+		})
+
+		it("second plan always contributes the ca-certs-helper", func() {
+			Expect(len(result.Plans)).To(Equal(2))
+			Expect(result.Plans[1]).To(Equal(libcnb.BuildPlan{
+				Provides: []libcnb.BuildPlanProvide{
+					{Name: cacerts.PlanEntryCACertsHelper},
+				},
+				Requires: []libcnb.BuildPlanRequire{
+					{Name: cacerts.PlanEntryCACertsHelper},
 				},
 			}))
 		})

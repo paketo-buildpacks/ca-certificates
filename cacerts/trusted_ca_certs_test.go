@@ -30,11 +30,11 @@ import (
 	"github.com/paketo-buildpacks/ca-certificates/cacerts"
 )
 
-func testLayer(t *testing.T, context spec.G, it spec.S) {
+func testTrustedCACerts(t *testing.T, context spec.G, it spec.S) {
 	var (
 		Expect     = NewWithT(t).Expect
 		layerPath  string
-		trustedCAs *cacerts.TrustedCAs
+		trustedCAs *cacerts.TrustedCACerts
 
 		certDir   string
 		certPaths []string
@@ -46,7 +46,7 @@ func testLayer(t *testing.T, context spec.G, it spec.S) {
 
 		layerPath, err = ioutil.TempDir("", "distribution-layers")
 		Expect(err).NotTo(HaveOccurred())
-		trustedCAs = &cacerts.TrustedCAs{
+		trustedCAs = &cacerts.TrustedCACerts{
 			LayerContributor: libpak.NewLayerContributor("CA Certificates", map[string]interface{}{}),
 			GenerateHashLinks: func(dir string, paths []string) error {
 				certDir = dir
@@ -76,7 +76,7 @@ func testLayer(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(layer.BuildEnvironment).To(HaveKey("SSL_CERT_DIR.append"))
 			Expect(layer.BuildEnvironment["SSL_CERT_DIR.append"]).
-				To(Equal(filepath.Join(layerPath, "certs")))
+				To(Equal(filepath.Join(layerPath, "ca-certificates")))
 			Expect(layer.BuildEnvironment).To(HaveKey("SSL_CERT_DIR.delim"))
 			Expect(layer.BuildEnvironment["SSL_CERT_DIR.delim"]).To(Equal(":"))
 		})
@@ -100,7 +100,7 @@ func testLayer(t *testing.T, context spec.G, it spec.S) {
 				filepath.Join("some-path", "cert1.pem"),
 				filepath.Join("some-path", "cert2.pem"),
 			}))
-			Expect(certDir).To(Equal(filepath.Join(layerPath, "certs")))
+			Expect(certDir).To(Equal(filepath.Join(layerPath, "ca-certificates")))
 		})
 	})
 }

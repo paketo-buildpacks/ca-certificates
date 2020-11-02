@@ -37,7 +37,7 @@ func main() {
 		cacertHelper := cacerts.NewExecD(bindings)
 		cacertHelper.Logger = bard.NewLogger(os.Stdout)
 		return sherpa.Helpers(map[string]sherpa.ExecD{
-			"ca-cert-helper": cacertHelper,
+			cacerts.ExecutableCACertsHelper: cacertHelper,
 		})
 	})
 }

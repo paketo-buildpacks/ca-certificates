@@ -43,17 +43,27 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 	b.Logger.Title(context.Buildpack)
 
 	var certPaths []string
-	var contributeHelper bool
+	var contributedHelper bool
 	for _, e := range context.Plan.Entries {
 		switch strings.ToLower(e.Name) {
-		case PlanEntryCACertificates:
+		case PlanEntryCACerts:
 			paths, err := pathsFromEntryMetadata(e.Metadata)
 			if err != nil {
 				return libcnb.BuildResult{}, fmt.Errorf("failed to decode CA certificate paths from plan entry:\n%w", err)
 			}
 			certPaths = append(certPaths, paths...)
-		case PlanEntryCACertHelper:
-			contributeHelper = true
+		case PlanEntryCACertsHelper:
+			if contributedHelper {
+				continue
+			}
+			h := libpak.NewHelperLayerContributor(
+				context.Buildpack,
+				&context.Plan,
+				ExecutableCACertsHelper,
+			)
+			h.Logger = b.Logger
+			result.Layers = append(result.Layers, h)
+			contributedHelper = true
 		default:
 			return libcnb.BuildResult{}, fmt.Errorf("received unexpected buildpack plan entry %q", e.Name)
 		}
@@ -61,19 +71,9 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 
 	if len(certPaths) > 0 {
 		sort.Strings(certPaths)
-		layer := NewTrustedCAs(certPaths)
+		layer := NewTrustedCACerts(certPaths)
 		layer.Logger = b.Logger
 		result.Layers = append(result.Layers, layer)
-	}
-
-	if contributeHelper {
-		h := libpak.NewHelperLayerContributor(
-			context.Buildpack,
-			&context.Plan,
-			"ca-cert-helper",
-		)
-		h.Logger = b.Logger
-		result.Layers = append(result.Layers, h)
 	}
 
 	return result, nil

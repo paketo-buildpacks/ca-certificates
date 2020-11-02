@@ -27,15 +27,15 @@ import (
 	"github.com/paketo-buildpacks/libpak/bard"
 )
 
-type TrustedCAs struct {
+type TrustedCACerts struct {
 	CertPaths         []string
 	LayerContributor  libpak.LayerContributor
 	GenerateHashLinks func(dir string, certPaths []string) error
 	Logger            bard.Logger
 }
 
-func NewTrustedCAs(paths []string) *TrustedCAs {
-	return &TrustedCAs{
+func NewTrustedCACerts(paths []string) *TrustedCACerts {
+	return &TrustedCACerts{
 		CertPaths:         paths,
 		LayerContributor:  libpak.NewLayerContributor("CA Certificates", map[string]interface{}{}),
 		GenerateHashLinks: GenerateHashLinks,
@@ -43,18 +43,18 @@ func NewTrustedCAs(paths []string) *TrustedCAs {
 }
 
 // Contribute create build layer adding the certificates at Layer.CAPaths to the set of trusted CAs.
-func (l TrustedCAs) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
+func (l TrustedCACerts) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
 	l.LayerContributor.Logger = l.Logger
 
 	return l.LayerContributor.Contribute(layer, func() (libcnb.Layer, error) {
 		layer.BuildEnvironment = libcnb.Environment{}
 
-		certsDir := filepath.Join(layer.Path, "certs")
+		certsDir := filepath.Join(layer.Path, "ca-certificates")
 		if err := os.Mkdir(certsDir, 0777); err != nil {
 			return libcnb.Layer{}, fmt.Errorf("failed to create directory %q\n%w", certsDir, err)
 		}
 		if err := l.GenerateHashLinks(certsDir, l.CertPaths); err != nil {
-			return libcnb.Layer{}, fmt.Errorf("failed to generate certificate symlinks\n%w", err)
+			return libcnb.Layer{}, fmt.Errorf("failed to generate CA certificate symlinks\n%w", err)
 		}
 		l.Logger.Bodyf("Added %d additional CA certificate(s) to system truststore", len(l.CertPaths))
 
@@ -68,6 +68,6 @@ func (l TrustedCAs) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
 	}, libpak.BuildLayer)
 }
 
-func (TrustedCAs) Name() string {
+func (TrustedCACerts) Name() string {
 	return "ca-certificates"
 }

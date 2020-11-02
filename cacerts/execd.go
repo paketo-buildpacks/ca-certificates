@@ -28,6 +28,12 @@ import (
 	"github.com/paketo-buildpacks/libpak/bard"
 )
 
+const (
+	// ExecutableCACertsHelper provides the name of the exec.d executable that adds CA certificates to the truststore
+	// at runtime.
+	ExecutableCACertsHelper = "ca-certificates-helper"
+)
+
 type ExecD struct {
 	Logger            bard.Logger
 	Bindings          libcnb.Bindings
@@ -50,12 +56,12 @@ func (e *ExecD) Execute() (map[string]string, error) {
 	if len(paths) == 0 {
 		return env, nil
 	}
-	certDir, err := ioutil.TempDir("", "ca-certs")
+	certDir, err := ioutil.TempDir("", "ca-certificates")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir\n%w", err)
 	}
 	if err := e.GenerateHashLinks(certDir, paths); err != nil {
-		return nil, fmt.Errorf("failed to generate ca certficate symlinks\n%w", err)
+		return nil, fmt.Errorf("failed to generate CA certficate symlinks\n%w", err)
 	}
 	e.Logger.Infof("Added %d additional CA certificate(s) to system truststore", len(paths))
 

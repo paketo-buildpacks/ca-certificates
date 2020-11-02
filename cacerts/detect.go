@@ -23,57 +23,48 @@ import (
 type Detect struct{}
 
 const (
-	// PlanEntryCACertificates if present in the build plan indicates that certificates should be added to the
+	// PlanEntryCACerts if present in the build plan indicates that certificates should be added to the
 	// truststore at build time.
-	PlanEntryCACertificates = "ca-certificates"
-	// PlanEntryCACertHelper if present in the build plan indicates the the ca-cert-helper binary should be
+	PlanEntryCACerts = "ca-certificates"
+	// PlanEntryCACertsHelper if present in the build plan indicates the the ca-cert-helper binary should be
 	// contributed to the app image.
-	PlanEntryCACertHelper = "ca-cert-helper"
+	PlanEntryCACertsHelper = "ca-certificates-helper"
 )
 
 // Detect always passes and optionally provides ca-certificates. If there is a binding of
 // type "ca-certificates" Detect also requires ca-certificates and provides an array of certificate paths in the
 // plan entry metadata.
 func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
-	paths := getsCertsFromBindings(context.Platform.Bindings)
-	if len(paths) > 0 {
-		return libcnb.DetectResult{Pass: true, Plans: []libcnb.BuildPlan{{
-			Provides: []libcnb.BuildPlanProvide{
-				{Name: PlanEntryCACertificates},
-				{Name: PlanEntryCACertHelper},
-			},
-			Requires: []libcnb.BuildPlanRequire{
-				{
-					Name: PlanEntryCACertificates,
-					Metadata: map[string]interface{}{
-						"paths": paths,
-					},
-				},
-				{Name: PlanEntryCACertHelper},
-			},
-		}}}, nil
-	}
-
-	return libcnb.DetectResult{
+	result := libcnb.DetectResult{
 		Pass: true,
 		Plans: []libcnb.BuildPlan{
 			{
 				Provides: []libcnb.BuildPlanProvide{
-					{Name: PlanEntryCACertificates},
-					{Name: PlanEntryCACertHelper},
+					{Name: PlanEntryCACertsHelper},
+					{Name: PlanEntryCACerts},
 				},
 				Requires: []libcnb.BuildPlanRequire{
-					{Name: PlanEntryCACertHelper},
+					{Name: PlanEntryCACertsHelper},
 				},
 			},
 			{
 				Provides: []libcnb.BuildPlanProvide{
-					{Name: PlanEntryCACertHelper},
+					{Name: PlanEntryCACertsHelper},
 				},
 				Requires: []libcnb.BuildPlanRequire{
-					{Name: PlanEntryCACertHelper},
+					{Name: PlanEntryCACertsHelper},
 				},
 			},
 		},
-	}, nil
+	}
+	paths := getsCertsFromBindings(context.Platform.Bindings)
+	if len(paths) > 0 {
+		result.Plans[0].Requires = append(result.Plans[0].Requires, libcnb.BuildPlanRequire{
+			Name: PlanEntryCACerts,
+			Metadata: map[string]interface{}{
+				"paths": paths,
+			},
+		})
+	}
+	return result, nil
 }

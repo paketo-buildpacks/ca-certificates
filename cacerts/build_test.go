@@ -55,7 +55,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		it.Before(func() {
 			ctx.Plan.Entries = []libcnb.BuildpackPlanEntry{
 				{
-					Name: "ca-certificates",
+					Name: cacerts.PlanEntryCACerts,
 					Metadata: map[string]interface{}{
 						"paths": []interface{}{
 							"some/path/cert1.pem",
@@ -73,7 +73,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		it("contributes a ca-certificates layers", func() {
 			Expect(len(result.Layers)).To(BeNumerically(">=", 1))
 			Expect(result.Layers[0].Name()).To(Equal("ca-certificates"))
-			contributor, ok := result.Layers[0].(*cacerts.TrustedCAs)
+			contributor, ok := result.Layers[0].(*cacerts.TrustedCACerts)
 			Expect(ok).To(BeTrue())
 			Expect(len(contributor.CertPaths)).To(Equal(3))
 			Expect(contributor.CertPaths).To(ConsistOf([]string{
@@ -90,7 +90,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		it.Before(func() {
 			ctx.Plan.Entries = []libcnb.BuildpackPlanEntry{
 				{
-					Name: "ca-certificates",
+					Name: cacerts.PlanEntryCACerts,
 					Metadata: map[string]interface{}{
 						"paths": []interface{}{
 							"some/path/cert1.pem",
@@ -99,7 +99,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					},
 				},
 				{
-					Name: "ca-certificates",
+					Name: cacerts.PlanEntryCACerts,
 					Metadata: map[string]interface{}{
 						"paths": []interface{}{
 							"some/path/cert2.pem",
@@ -115,7 +115,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 		it("contributes a single ca-certificates", func() {
 			Expect(len(result.Layers)).To(BeNumerically(">=", 1))
 			Expect(result.Layers[0].Name()).To(Equal("ca-certificates"))
-			contributor, ok := result.Layers[0].(*cacerts.TrustedCAs)
+			contributor, ok := result.Layers[0].(*cacerts.TrustedCACerts)
 			Expect(ok).To(BeTrue())
 			Expect(len(contributor.CertPaths)).To(Equal(3))
 			Expect(contributor.CertPaths).To(Equal([]string{
@@ -131,7 +131,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		it.Before(func() {
 			ctx.Plan.Entries = []libcnb.BuildpackPlanEntry{
-				{Name: "ca-cert-helper"},
+				{Name: cacerts.PlanEntryCACertsHelper},
 			}
 			var err error
 			result, err = build.Build(ctx)
@@ -151,8 +151,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		it.Before(func() {
 			ctx.Plan.Entries = []libcnb.BuildpackPlanEntry{
-				{Name: "ca-cert-helper"},
-				{Name: "ca-cert-helper"},
+				{Name: cacerts.PlanEntryCACertsHelper},
+				{Name: cacerts.PlanEntryCACertsHelper},
 			}
 			var err error
 			result, err = build.Build(ctx)

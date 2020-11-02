@@ -24,7 +24,7 @@ To learn about the conventional meaning of `SSL_CERT_DIR` and `SSL_CERT_FILE` en
 ## Bindings
 The buildpack optionally accepts the following bindings:
 
-### Type: `ca-certficates`
+### Type: `ca-certificates`
 |Key                   | Value   | Description
 |----------------------|---------|------------
 |`<certificate-name>` | `<ceritificate>` | CA certficate to trust. Should contain exactly one PEM encoded certificate.
