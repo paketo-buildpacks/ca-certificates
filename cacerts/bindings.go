@@ -14,20 +14,29 @@
  * limitations under the License.
  */
 
-package main
+package cacerts
 
 import (
-	"os"
+	"sort"
 
-	"github.com/paketo-buildpacks/libpak"
-	"github.com/paketo-buildpacks/libpak/bard"
+	"github.com/buildpacks/libcnb"
 
-	"github.com/paketo-buildpacks/ca-certificates/cacerts"
+	"github.com/paketo-buildpacks/libpak/bindings"
 )
 
-func main() {
-	libpak.Main(
-		cacerts.Detect{},
-		cacerts.Build{Logger: bard.NewLogger(os.Stdout)},
-	)
+const (
+	BindingType = "ca-certificates" // BindingType is used to resolve bindings containing CA certificates
+)
+
+func getsCertsFromBindings(binds libcnb.Bindings) []string {
+	var paths []string
+	for _, bind := range bindings.Resolve(binds, bindings.OfType(BindingType)) {
+		for k, _ := range bind.Secret {
+			if path, ok := bind.SecretFilePath(k); ok {
+				paths = append(paths, path)
+			}
+		}
+	}
+	sort.Strings(paths)
+	return paths
 }

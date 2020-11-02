@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package main
+package cacerts_test
 
 import (
-	"os"
+	"testing"
 
-	"github.com/paketo-buildpacks/libpak"
-	"github.com/paketo-buildpacks/libpak/bard"
-
-	"github.com/paketo-buildpacks/ca-certificates/cacerts"
+	"github.com/sclevine/spec"
+	"github.com/sclevine/spec/report"
 )
 
-func main() {
-	libpak.Main(
-		cacerts.Detect{},
-		cacerts.Build{Logger: bard.NewLogger(os.Stdout)},
-	)
+func TestUnit(t *testing.T) {
+	suite := spec.New("cacerts", spec.Report(report.Terminal{}))
+	suite("Detect", testDetect)
+	suite("Build", testBuild)
+	suite("ExecD", testExecD)
+	suite("Certs", testCerts)
+	suite("TrustedCACerts", testTrustedCACerts)
+	suite.Run(t)
 }
