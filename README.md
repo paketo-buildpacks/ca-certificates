@@ -27,7 +27,7 @@ The buildpack optionally accepts the following bindings:
 ### Type: `ca-certificates`
 |Key                   | Value   | Description
 |----------------------|---------|------------
-|`<certificate-name>` | `<ceritificate>` | CA certficate to trust. Should contain exactly one PEM encoded certificate.
+|`<certificate-name>` | `<certificate>` | CA certificate to trust. Should contain exactly one PEM encoded certificate.
 
 ## License
 This buildpack is released under version 2.0 of the [Apache License][a].
