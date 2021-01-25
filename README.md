@@ -9,13 +9,13 @@ The buildpack will do the following:
 * At build time:
   * Contributes the `ca-cert-helper` to the application image.
   * If one or more bindings with `type` of `ca-certificates` exists, it adds all CA certificates from the bindings to the system truststore.
-  * If another buildpack provides an entry of `type` `ca-certifcates` in the build plan with `metadata.paths` containing an array of certificate paths, it adds all CA certificates from the given paths to the system truststore.
+  * If another buildpack provides an entry of `type` `ca-certificates` in the build plan with `metadata.paths` containing an array of certificate paths, it adds all CA certificates from the given paths to the system truststore.
 * At runtime:
   * If one or more bindings with `type` of `ca-certificates` exists, the `ca-cert-helper` adds all CA certificates from the bindings to the system truststore.
 
 The buildpack configures trusted certs at both build and runtime by:
  1. Creating a directory.
- 2. Creating symlinks within the directory pointing to any additional requested certficate files.
+ 2. Creating symlinks within the directory pointing to any additional requested certificate files.
  3. Appending the directory to the `SSL_CERT_DIR` environment variable.
  3. Setting `SSL_CERT_FILE` to the default system CA file, if it was previously unset.
 
