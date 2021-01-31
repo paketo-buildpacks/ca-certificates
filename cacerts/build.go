@@ -38,7 +38,7 @@ type Build struct {
 // If the buildpack plan contains an entry with name "ca-certificates" Build will contribute a build layer
 // that adds the ca certificates at the paths provided in the plan entry metadata to the system truststore.
 func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
-	var result libcnb.BuildResult
+	result := libcnb.NewBuildResult()
 
 	b.Logger.Title(context.Buildpack)
 
@@ -56,13 +56,13 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 			if contributedHelper {
 				continue
 			}
-			h := libpak.NewHelperLayerContributor(
+			h, be := libpak.NewHelperLayer(
 				context.Buildpack,
-				&context.Plan,
 				ExecutableCACertsHelper,
 			)
 			h.Logger = b.Logger
 			result.Layers = append(result.Layers, h)
+			result.BOM.Entries = append(result.BOM.Entries, be)
 			contributedHelper = true
 		default:
 			return libcnb.BuildResult{}, fmt.Errorf("received unexpected buildpack plan entry %q", e.Name)
