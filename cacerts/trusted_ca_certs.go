@@ -36,8 +36,14 @@ type TrustedCACerts struct {
 
 func NewTrustedCACerts(paths []string) *TrustedCACerts {
 	return &TrustedCACerts{
-		CertPaths:         paths,
-		LayerContributor:  libpak.NewLayerContributor("CA Certificates", map[string]interface{}{}),
+		CertPaths: paths,
+		LayerContributor: libpak.NewLayerContributor(
+			"CA Certificates",
+			map[string]interface{}{},
+			libcnb.LayerTypes{
+				Build: true,
+			},
+		),
 		GenerateHashLinks: GenerateHashLinks,
 	}
 }
@@ -65,7 +71,7 @@ func (l TrustedCACerts) Contribute(layer libcnb.Layer) (libcnb.Layer, error) {
 		)
 		layer.BuildEnvironment.Default(EnvCAFile, DefaultCAFile)
 		return layer, nil
-	}, libpak.BuildLayer)
+	})
 }
 
 func (TrustedCACerts) Name() string {

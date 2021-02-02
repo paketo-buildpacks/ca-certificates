@@ -47,7 +47,13 @@ func testTrustedCACerts(t *testing.T, context spec.G, it spec.S) {
 		layerPath, err = ioutil.TempDir("", "distribution-layers")
 		Expect(err).NotTo(HaveOccurred())
 		trustedCAs = &cacerts.TrustedCACerts{
-			LayerContributor: libpak.NewLayerContributor("CA Certificates", map[string]interface{}{}),
+			LayerContributor: libpak.NewLayerContributor(
+				"CA Certificates",
+				map[string]interface{}{},
+				libcnb.LayerTypes{
+					Build: true,
+				},
+			),
 			GenerateHashLinks: func(dir string, paths []string) error {
 				certDir = dir
 				certPaths = paths
