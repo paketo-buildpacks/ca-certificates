@@ -17,6 +17,7 @@
 package cacerts_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -64,7 +65,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		it("always passes", func() {
+		it("detect passes", func() {
 			Expect(result.Pass).To(BeTrue())
 		})
 
@@ -72,11 +73,10 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(len(result.Plans)).To(BeNumerically(">=", 1))
 			Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
 				Provides: []libcnb.BuildPlanProvide{
-					{Name: cacerts.PlanEntryCACertsHelper},
 					{Name: cacerts.PlanEntryCACerts},
+					{Name: cacerts.PlanEntryCACertsHelper},
 				},
 				Requires: []libcnb.BuildPlanRequire{
-					{Name: cacerts.PlanEntryCACertsHelper},
 					{
 						Name: cacerts.PlanEntryCACerts,
 						Metadata: map[string]interface{}{
@@ -87,8 +87,51 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 							},
 						},
 					},
+					{Name: cacerts.PlanEntryCACertsHelper},
 				},
 			}))
+		})
+
+		context("BP_ENABLE_RUNTIME_CERT_BINDING is set to false", func() {
+			var result libcnb.DetectResult
+			it.Before(func() {
+				// ctx.Platform.Environment = map[string]string{"BP_ENABLE_RUNTIME_CERT_BINDING": "false"}
+				os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")
+
+				var err error
+				result, err = detect.Detect(ctx)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			it.After(func() {
+				os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")
+			})
+
+			it("detect passes", func() {
+				Expect(result.Pass).To(BeTrue())
+			})
+
+			it("there is no ca-certificates-helper plan entry", func() {
+				Expect(len(result.Plans)).To(Equal(1))
+
+				Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
+					Provides: []libcnb.BuildPlanProvide{
+						{Name: cacerts.PlanEntryCACerts},
+					},
+					Requires: []libcnb.BuildPlanRequire{
+						{
+							Name: cacerts.PlanEntryCACerts,
+							Metadata: map[string]interface{}{
+								"paths": []string{
+									filepath.Join("other-path", "cert3.pem"),
+									filepath.Join("some-path", "cert1.pem"),
+									filepath.Join("some-path", "cert2.pem"),
+								},
+							},
+						},
+					},
+				}))
+			})
 		})
 	})
 
@@ -100,7 +143,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		it("always passes", func() {
+		it("detect passes", func() {
 			Expect(result.Pass).To(BeTrue())
 		})
 
@@ -108,8 +151,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(len(result.Plans)).To(BeNumerically(">=", 1))
 			Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
 				Provides: []libcnb.BuildPlanProvide{
-					{Name: cacerts.PlanEntryCACertsHelper},
 					{Name: cacerts.PlanEntryCACerts},
+					{Name: cacerts.PlanEntryCACertsHelper},
 				},
 				Requires: []libcnb.BuildPlanRequire{
 					{Name: cacerts.PlanEntryCACertsHelper},
@@ -127,6 +170,36 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 					{Name: cacerts.PlanEntryCACertsHelper},
 				},
 			}))
+		})
+
+		context("BP_ENABLE_RUNTIME_CERT_BINDING is set to false", func() {
+			var result libcnb.DetectResult
+			it.Before(func() {
+				// ctx.Platform.Environment = map[string]string{"BP_ENABLE_RUNTIME_CERT_BINDING": "false"}
+				os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")
+
+				var err error
+				result, err = detect.Detect(ctx)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			it.After(func() {
+				os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")
+			})
+
+			it("detect fails", func() {
+				Expect(result.Pass).To(BeFalse())
+			})
+
+			it("first plan does not require ca-certificates", func() {
+				Expect(len(result.Plans)).To(Equal(1))
+				Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
+					Provides: []libcnb.BuildPlanProvide{
+						{Name: cacerts.PlanEntryCACerts},
+					},
+					Requires: []libcnb.BuildPlanRequire{},
+				}))
+			})
 		})
 	})
 }

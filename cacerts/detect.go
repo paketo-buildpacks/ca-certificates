@@ -17,6 +17,8 @@
 package cacerts
 
 import (
+	"os"
+
 	"github.com/buildpacks/libcnb"
 )
 
@@ -31,40 +33,62 @@ const (
 	PlanEntryCACertsHelper = "ca-certificates-helper"
 )
 
-// Detect always passes and optionally provides ca-certificates. If there is a binding of
+// Detect always passes by default and optionally provides ca-certificates. If there is a binding of
 // type "ca-certificates" Detect also requires ca-certificates and provides an array of certificate paths in the
 // plan entry metadata.
+//
+// To prevent default detection, users can set the
+// BP_ENABLE_RUNTIME_CERT_BINDING environment variable to "false" at
+// build-time. This will disable the helper layer, and the buildpack will only
+// detect if there is no ca-certificates binding present at build-time.
 func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
-	result := libcnb.DetectResult{
-		Pass: true,
-		Plans: []libcnb.BuildPlan{
-			{
-				Provides: []libcnb.BuildPlanProvide{
-					{Name: PlanEntryCACertsHelper},
-					{Name: PlanEntryCACerts},
-				},
-				Requires: []libcnb.BuildPlanRequire{
-					{Name: PlanEntryCACertsHelper},
-				},
-			},
-			{
-				Provides: []libcnb.BuildPlanProvide{
-					{Name: PlanEntryCACertsHelper},
-				},
-				Requires: []libcnb.BuildPlanRequire{
-					{Name: PlanEntryCACertsHelper},
-				},
-			},
-		},
+	provides := []libcnb.BuildPlanProvide{
+		{Name: PlanEntryCACerts},
 	}
+
+	requires := []libcnb.BuildPlanRequire{}
+
+	// If there are CA cert bindings at build time, require PlanEntryCACerts
 	paths := getsCertsFromBindings(context.Platform.Bindings)
 	if len(paths) > 0 {
-		result.Plans[0].Requires = append(result.Plans[0].Requires, libcnb.BuildPlanRequire{
+		requires = append(requires, libcnb.BuildPlanRequire{
 			Name: PlanEntryCACerts,
 			Metadata: map[string]interface{}{
 				"paths": paths,
 			},
 		})
 	}
+
+	result := libcnb.DetectResult{
+		Pass: true,
+		Plans: []libcnb.BuildPlan{
+			{
+				Provides: provides,
+				Requires: requires,
+			},
+		},
+	}
+
+	// If BP_ENABLE_RUNTIME_CERT_BINDING = false, do not enable helper layer.
+	enableCertBinding := os.Getenv("BP_ENABLE_RUNTIME_CERT_BINDING")
+	if enableCertBinding == "false" {
+		// If there are bindings either, we should fail detection outright
+		if len(paths) == 0 {
+			result.Pass = false
+		}
+		return result, nil
+	}
+
+	// Add helper layer build plan entries
+	helperProvide := libcnb.BuildPlanProvide{Name: PlanEntryCACertsHelper}
+	helperRequire := libcnb.BuildPlanRequire{Name: PlanEntryCACertsHelper}
+	result.Plans[0].Provides = append(result.Plans[0].Provides, helperProvide)
+	result.Plans[0].Requires = append(result.Plans[0].Requires, helperRequire)
+
+	result.Plans = append(result.Plans, libcnb.BuildPlan{
+		Provides: []libcnb.BuildPlanProvide{helperProvide},
+		Requires: []libcnb.BuildPlanRequire{helperRequire},
+	})
+
 	return result, nil
 }
