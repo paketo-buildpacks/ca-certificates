@@ -42,6 +42,11 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 
 	b.Logger.Title(context.Buildpack)
 
+	_, err := libpak.NewConfigurationResolver(context.Buildpack, &b.Logger)
+	if err != nil {
+		return libcnb.BuildResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
+	}
+
 	var certPaths []string
 	var contributedHelper bool
 	for _, e := range context.Plan.Entries {

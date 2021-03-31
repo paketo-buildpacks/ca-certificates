@@ -26,6 +26,11 @@ id = "io.buildpacks.stacks.bionic"
 [[stacks]]
 id = "io.paketo.stacks.tiny"
 
+[[metatdata.configurations]]
+name        = "BP_ENABLE_RUNTIME_CERT_BINDING"
+description = "Enable/disable certificate helper layer to add certs at runtime"
+build       = true
+
 [metadata]
 pre-package   = "scripts/build.sh"
 include-files = [

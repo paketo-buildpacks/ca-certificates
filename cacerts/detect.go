@@ -17,9 +17,11 @@
 package cacerts
 
 import (
-	"os"
+	"fmt"
+	"strconv"
 
 	"github.com/buildpacks/libcnb"
+	"github.com/paketo-buildpacks/libpak"
 )
 
 type Detect struct{}
@@ -41,7 +43,7 @@ const (
 // BP_ENABLE_RUNTIME_CERT_BINDING environment variable to "false" at
 // build-time. This will disable the helper layer, and the buildpack will only
 // detect if there is no ca-certificates binding present at build-time.
-func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
+func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
 	provides := []libcnb.BuildPlanProvide{
 		{Name: PlanEntryCACerts},
 	}
@@ -70,9 +72,14 @@ func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) 
 	}
 
 	// If BP_ENABLE_RUNTIME_CERT_BINDING = false, do not enable helper layer.
-	enableCertBinding := os.Getenv("BP_ENABLE_RUNTIME_CERT_BINDING")
-	if enableCertBinding == "false" {
-		// If there are bindings either, we should fail detection outright
+	cr, err := libpak.NewConfigurationResolver(context.Buildpack, nil)
+	if err != nil {
+		return libcnb.DetectResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
+	}
+	if ok, err := d.runtimeCertBindingEnabled(cr); err != nil {
+		return libcnb.DetectResult{}, err
+	} else if !ok {
+		// If there are no bindings either, we should fail detection outright
 		if len(paths) == 0 {
 			result.Pass = false
 		}
@@ -91,4 +98,19 @@ func (Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) 
 	})
 
 	return result, nil
+}
+
+func (d Detect) runtimeCertBindingEnabled(cr libpak.ConfigurationResolver) (bool, error) {
+	if val, ok := cr.Resolve("BP_ENABLE_RUNTIME_CERT_BINDING"); ok {
+		enable, err := strconv.ParseBool(val)
+		if err != nil {
+			return false, fmt.Errorf(
+				"invalid value '%s' for key '%s': expected one of [1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False]",
+				val,
+				"BP_ENABLE_RUNTIME_CERT_BINDING",
+			)
+		}
+		return enable, nil
+	}
+	return true, nil
 }
