@@ -76,12 +76,10 @@ func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error
 	if err != nil {
 		return libcnb.DetectResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
 	}
-	if ok, err := d.runtimeCertBindingEnabled(cr); err != nil {
-		return libcnb.DetectResult{}, err
-	} else if !ok {
-		// If there are no bindings either, we should fail detection outright
-		if len(paths) == 0 {
-			result.Pass = false
+
+	if ok, err := d.runtimeCertBindingEnabled(cr); !ok {
+		if err != nil {
+			return libcnb.DetectResult{}, err
 		}
 		return result, nil
 	}

@@ -95,7 +95,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("BP_ENABLE_RUNTIME_CERT_BINDING is set to false", func() {
 			var result libcnb.DetectResult
 			it.Before(func() {
-				// ctx.Platform.Environment = map[string]string{"BP_ENABLE_RUNTIME_CERT_BINDING": "false"}
 				os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")
 
 				var err error
@@ -175,7 +174,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("BP_ENABLE_RUNTIME_CERT_BINDING is set to false", func() {
 			var result libcnb.DetectResult
 			it.Before(func() {
-				// ctx.Platform.Environment = map[string]string{"BP_ENABLE_RUNTIME_CERT_BINDING": "false"}
 				os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")
 
 				var err error
@@ -187,8 +185,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")
 			})
 
-			it("detect fails", func() {
-				Expect(result.Pass).To(BeFalse())
+			it("detect passes", func() {
+				Expect(result.Pass).To(BeTrue())
 			})
 
 			it("first plan does not require ca-certificates", func() {
