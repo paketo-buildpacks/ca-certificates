@@ -29,6 +29,11 @@ The buildpack optionally accepts the following bindings:
 |----------------------|---------|------------
 |`<certificate-name>` | `<certificate>` | CA certificate to trust. Should contain exactly one PEM encoded certificate.
 
+## Configuration
+| Environment Variable | Description
+| -------------------- | -----------
+| `$BP_ENABLE_RUNTIME_CERT_BINDING` | Enable/disable the ability to set certificates at runtime via the certificate helper layer. Default is true.
+
 ## License
 This buildpack is released under version 2.0 of the [Apache License][a].
 
