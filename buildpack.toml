@@ -12,13 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-api = "0.5"
+api = "0.6"
 
 [buildpack]
 id       = "paketo-buildpacks/ca-certificates"
 name     = "Paketo CA Certificates Buildpack"
 version  = "{{.version}}"
 homepage = "https://github.com/paketo-buildpacks/ca-certificates"
+description = "A Cloud Native Buildpack that adds custom CA certificates to a build and a created image"
+keywords    = ["ca-certificates", "trust", "certificates"]
+
+[[buildpack.licenses]]
+type = "Apache-2.0"
+uri  = "https://github.com/paketo-buildpacks/ca-certificates/blob/main/LICENSE"
 
 [[stacks]]
 id = "io.buildpacks.stacks.bionic"
