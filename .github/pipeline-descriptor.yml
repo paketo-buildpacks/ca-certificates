@@ -4,7 +4,7 @@ github:
 
 codeowners:
 - path:  "*"
-  owner: "@paketo-buildpacks/java-buildpacks"
+  owner: "@paketo-buildpacks/utilities-maintainers"
 
 package:
   repository:     gcr.io/paketo-buildpacks/ca-certificates
