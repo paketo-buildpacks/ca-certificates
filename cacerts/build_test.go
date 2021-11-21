@@ -133,6 +133,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			ctx.Plan.Entries = []libcnb.BuildpackPlanEntry{
 				{Name: cacerts.PlanEntryCACertsHelper},
 			}
+			ctx.Buildpack.API = "0.6"
 			var err error
 			result, err = build.Build(ctx)
 			Expect(err).NotTo(HaveOccurred())

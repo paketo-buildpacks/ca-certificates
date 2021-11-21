@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-api = "0.6"
+api = "0.7"
 
 [buildpack]
   description = "A Cloud Native Buildpack that adds custom CA certificates to a build and a created image"
@@ -21,6 +21,7 @@ api = "0.6"
   keywords = ["ca-certificates", "trust", "certificates"]
   name = "Paketo CA Certificates Buildpack"
   version = "{{.version}}"
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/vnd.syft+json"]
 
   [[buildpack.licenses]]
     type = "Apache-2.0"
