@@ -133,19 +133,36 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			ctx.Plan.Entries = []libcnb.BuildpackPlanEntry{
 				{Name: cacerts.PlanEntryCACertsHelper},
 			}
-			ctx.Buildpack.API = "0.6"
-			var err error
-			result, err = build.Build(ctx)
-			Expect(err).NotTo(HaveOccurred())
+
 		})
 
-		it("contributes helper", func() {
+		it("contributes helper for API <= 0.6", func() {
+
+			var err error
+			ctx.Buildpack.API = "0.6"
+
+			result, err = build.Build(ctx)
+			Expect(err).NotTo(HaveOccurred())
+
 			Expect(len(result.Layers)).To(Equal(1))
 			helperLayer, ok := result.Layers[0].(libpak.HelperLayerContributor)
 			Expect(ok).To(BeTrue())
 			Expect(helperLayer.Name()).To(Equal("helper"))
 			Expect(len(result.BOM.Entries)).To(Equal(1))
 			Expect(result.BOM.Entries[0].Name).To(Equal("helper"))
+		})
+		it("contributes helper for API 0.7+", func() {
+			var err error
+			ctx.Buildpack.API = "0.7"
+
+			result, err = build.Build(ctx)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(len(result.Layers)).To(Equal(1))
+			helperLayer, ok := result.Layers[0].(libpak.HelperLayerContributor)
+			Expect(ok).To(BeTrue())
+			Expect(helperLayer.Name()).To(Equal("helper"))
+			Expect(len(result.BOM.Entries)).To(Equal(0))
 		})
 	})
 
