@@ -67,7 +67,9 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 			)
 			h.Logger = b.Logger
 			result.Layers = append(result.Layers, h)
-			result.BOM.Entries = append(result.BOM.Entries, be)
+			if be.Name != "" {
+				result.BOM.Entries = append(result.BOM.Entries, be)
+			}
 			contributedHelper = true
 		default:
 			return libcnb.BuildResult{}, fmt.Errorf("received unexpected buildpack plan entry %q", e.Name)
