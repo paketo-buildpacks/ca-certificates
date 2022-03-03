@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-GOOS="linux" go build -ldflags='-s -w' -o bin/main github.com/paketo-buildpacks/ca-certificates/cmd/main
-GOOS="linux" go build -ldflags='-s -w' -o bin/helper github.com/paketo-buildpacks/ca-certificates/cmd/helper
+GOOS="linux" go build -ldflags='-s -w' -o bin/main github.com/paketo-buildpacks/ca-certificates/v3/cmd/main
+GOOS="linux" go build -ldflags='-s -w' -o bin/helper github.com/paketo-buildpacks/ca-certificates/v3/cmd/helper
 
 if [ "${STRIP:-false}" != "false" ]; then
   strip bin/helper bin/main
