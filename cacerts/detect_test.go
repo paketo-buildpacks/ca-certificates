@@ -132,6 +132,47 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 				}))
 			})
 		})
+
+		context("BP_RUNTIME_CERT_BINDING_DISABLED is set to true", func() {
+			var result libcnb.DetectResult
+			it.Before(func() {
+				os.Setenv("BP_RUNTIME_CERT_BINDING_DISABLED", "true")
+
+				var err error
+				result, err = detect.Detect(ctx)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			it.After(func() {
+				os.Unsetenv("BP_RUNTIME_CERT_BINDING_DISABLED")
+			})
+
+			it("detect passes", func() {
+				Expect(result.Pass).To(BeTrue())
+			})
+
+			it("there is no ca-certificates-helper plan entry", func() {
+				Expect(len(result.Plans)).To(Equal(1))
+
+				Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
+					Provides: []libcnb.BuildPlanProvide{
+						{Name: cacerts.PlanEntryCACerts},
+					},
+					Requires: []libcnb.BuildPlanRequire{
+						{
+							Name: cacerts.PlanEntryCACerts,
+							Metadata: map[string]interface{}{
+								"paths": []string{
+									filepath.Join("other-path", "cert3.pem"),
+									filepath.Join("some-path", "cert1.pem"),
+									filepath.Join("some-path", "cert2.pem"),
+								},
+							},
+						},
+					},
+				}))
+			})
+		})
 	})
 
 	context("Binding does not exist with type ca-certificates", func() {
@@ -183,6 +224,35 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 			it.After(func() {
 				os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")
+			})
+
+			it("detect passes", func() {
+				Expect(result.Pass).To(BeTrue())
+			})
+
+			it("first plan does not require ca-certificates", func() {
+				Expect(len(result.Plans)).To(Equal(1))
+				Expect(result.Plans[0]).To(Equal(libcnb.BuildPlan{
+					Provides: []libcnb.BuildPlanProvide{
+						{Name: cacerts.PlanEntryCACerts},
+					},
+					Requires: []libcnb.BuildPlanRequire{},
+				}))
+			})
+		})
+
+		context("BP_RUNTIME_CERT_BINDING_DISABLED is set to true", func() {
+			var result libcnb.DetectResult
+			it.Before(func() {
+				os.Setenv("BP_RUNTIME_CERT_BINDING_DISABLED", "true")
+
+				var err error
+				result, err = detect.Detect(ctx)
+				Expect(err).NotTo(HaveOccurred())
+			})
+
+			it.After(func() {
+				os.Unsetenv("BP_RUNTIME_CERT_BINDING_DISABLED")
 			})
 
 			it("detect passes", func() {

@@ -31,7 +31,7 @@ const (
 func getsCertsFromBindings(binds libcnb.Bindings) []string {
 	var paths []string
 	for _, bind := range bindings.Resolve(binds, bindings.OfType(BindingType)) {
-		for k, _ := range bind.Secret {
+		for k := range bind.Secret {
 			if path, ok := bind.SecretFilePath(k); ok {
 				paths = append(paths, path)
 			}

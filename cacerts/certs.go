@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ func decodeOneCert(raw []byte) (*x509.Certificate, error) {
 	if block == nil {
 		return nil, errors.New("failed find PEM data")
 	}
-	extra, rest := pem.Decode(rest)
+	extra, _ := pem.Decode(rest)
 	if extra != nil {
 		return nil, errors.New("found multiple PEM blocks, expected exactly one")
 	}
@@ -164,8 +164,8 @@ func CanonicalName(name []byte) ([]byte, error) {
 //
 // This is a reimplementation of the asn1_string_canon in openssl
 func CanonicalString(s string) string {
-	s = strings.TrimLeft(s, " \f\t\n\n\v")
-	s = strings.TrimRight(s, " \f\t\n\n\v")
+	s = strings.TrimLeft(s, " \f\t\n\v")
+	s = strings.TrimRight(s, " \f\t\n\v")
 	s = strings.ToLower(s)
 	return string(regexp.MustCompile(`[[:space:]]+`).ReplaceAll([]byte(s), []byte(" ")))
 }

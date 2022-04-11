@@ -35,7 +35,19 @@ api = "0.7"
 
   [[metatdata.configurations]]
     build = true
-    description = "Enable/disable certificate helper layer to add certs at runtime"
+    default = false
+    description = "Disable certificate helper layer to add certs at runtime"
+    name = "BP_RUNTIME_CERT_BINDING_DISABLED"
+
+  [[metatdata.configurations]]
+    build = true
+    default = false
+    description = "Embed certificates into the image"
+    name = "BP_EMBED_CERTS"
+
+  [[metatdata.configurations]]
+    build = true
+    description = "Deprecated: Enable/disable certificate helper layer to add certs at runtime"
     name = "BP_ENABLE_RUNTIME_CERT_BINDING"
 
 [[stacks]]
