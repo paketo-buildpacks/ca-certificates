@@ -9,7 +9,7 @@ This buildpack always participates.
 The buildpack will do the following:
 
 * At build time:
-  * If `$BP_RUNTIME_CERT_BINDING_DISABLED` is false, it contributes the `ca-cert-helper` to the application image.
+  * If `$BP_RUNTIME_CERT_BINDING_DISABLED` is false, it contributes the `ca-cert-helper` to the application image. Default is false.
   * If one or more bindings with `type` of `ca-certificates` exists, it adds all CA certificates from the bindings to the system truststore.
   * If another buildpack provides an entry of `type` `ca-certificates` in the build plan with `metadata.paths` containing an array of certificate paths, it adds all CA certificates from the given paths to the system truststore.
   * If `$BP_EMBED_CERTS` is true, it includes the layer with all of the CA certificates into the application image.
