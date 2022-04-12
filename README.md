@@ -39,7 +39,7 @@ The buildpack optionally accepts the following bindings:
 | Environment Variable                | Description                                                                                                                                                                                 |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `$BP_EMBED_CERTS`                   | Embed all CA certificate bindings present at buildtime into the application image. This removes the need to have any embedded CA certificate bindings present at runtime. Default is false. |
-| `$BP_RUNTIME_CERT_BINDING_DISABLED` | Disable the helper that adds certifiates at runtime. This means an provided CA certificates will not be included. Default to false, which means certificates are loaded by default.         |
+| `$BP_RUNTIME_CERT_BINDING_DISABLED` | Disable the helper that adds certificates at runtime. This means any provided CA certificates will not be included. Default to false, which means certificates are loaded by default.         |
 | `$BP_ENABLE_RUNTIME_CERT_BINDING`   | Deprecated in favour of `$BP_RUNTIME_CERT_BINDING_DISABLED`. Enable/disable the ability to set certificates at runtime via the certificate helper layer. Default is true.                   |
 
 ## License
