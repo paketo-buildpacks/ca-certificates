@@ -30,6 +30,7 @@ const (
 	// PlanEntryCACerts if present in the build plan indicates that certificates should be added to the
 	// truststore at build time.
 	PlanEntryCACerts = "ca-certificates"
+
 	// PlanEntryCACertsHelper if present in the build plan indicates the the ca-cert-helper binary should be
 	// contributed to the app image.
 	PlanEntryCACertsHelper = "ca-certificates-helper"
@@ -40,7 +41,7 @@ const (
 // plan entry metadata.
 //
 // To prevent default detection, users can set the
-// BP_ENABLE_RUNTIME_CERT_BINDING environment variable to "false" at
+// BP_RUNTIME_CERT_BINDING_DISABLED environment variable to "true" at
 // build-time. This will disable the helper layer, and the buildpack will only
 // detect if there is no ca-certificates binding present at build-time.
 func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error) {
@@ -71,7 +72,7 @@ func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error
 		},
 	}
 
-	// If BP_ENABLE_RUNTIME_CERT_BINDING = false, do not enable helper layer.
+	// If BP_RUNTIME_CERT_BINDING_DISABLED = true, do not enable helper layer.
 	cr, err := libpak.NewConfigurationResolver(context.Buildpack, nil)
 	if err != nil {
 		return libcnb.DetectResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
@@ -99,7 +100,12 @@ func (d Detect) Detect(context libcnb.DetectContext) (libcnb.DetectResult, error
 }
 
 func (d Detect) runtimeCertBindingEnabled(cr libpak.ConfigurationResolver) (bool, error) {
-	if val, ok := cr.Resolve("BP_ENABLE_RUNTIME_CERT_BINDING"); ok {
+	if cr.ResolveBool("BP_RUNTIME_CERT_BINDING_DISABLED") {
+		return false, nil
+	}
+
+	// Deprecated: Remove support for this environment variable in the future
+	if val, isSet := cr.Resolve("BP_ENABLE_RUNTIME_CERT_BINDING"); isSet {
 		enable, err := strconv.ParseBool(val)
 		if err != nil {
 			return false, fmt.Errorf(
@@ -110,5 +116,6 @@ func (d Detect) runtimeCertBindingEnabled(cr libpak.ConfigurationResolver) (bool
 		}
 		return enable, nil
 	}
+
 	return true, nil
 }
