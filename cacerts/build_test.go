@@ -19,6 +19,7 @@ package cacerts_test
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/buildpacks/libcnb"
@@ -58,9 +59,9 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Name: cacerts.PlanEntryCACerts,
 					Metadata: map[string]interface{}{
 						"paths": []interface{}{
-							"some/path/cert1.pem",
-							"some/path/cert2.pem",
-							"some/path/cert3.pem",
+							filepath.Join("testdata", "SecureTrust_CA.pem"),
+							filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem"),
+							filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem"),
 						},
 					},
 				},
@@ -76,11 +77,11 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			contributor, ok := result.Layers[0].(*cacerts.TrustedCACerts)
 			Expect(ok).To(BeTrue())
 			Expect(len(contributor.CertPaths)).To(Equal(3))
-			Expect(contributor.CertPaths).To(ConsistOf([]string{
-				"some/path/cert1.pem",
-				"some/path/cert2.pem",
-				"some/path/cert3.pem",
-			}))
+			Expect(contributor.CertPaths).To(ConsistOf(
+				ContainSubstring(filepath.Join("testdata", "SecureTrust_CA.pem")),
+				ContainSubstring(filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem")),
+				ContainSubstring(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem")),
+			))
 		})
 	})
 
@@ -93,8 +94,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Name: cacerts.PlanEntryCACerts,
 					Metadata: map[string]interface{}{
 						"paths": []interface{}{
-							"some/path/cert1.pem",
-							"some/path/cert3.pem",
+							filepath.Join("testdata", "SecureTrust_CA.pem"),
+							filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem"),
 						},
 					},
 				},
@@ -102,7 +103,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 					Name: cacerts.PlanEntryCACerts,
 					Metadata: map[string]interface{}{
 						"paths": []interface{}{
-							"some/path/cert2.pem",
+							filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem"),
 						},
 					},
 				},
@@ -118,11 +119,11 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			contributor, ok := result.Layers[0].(*cacerts.TrustedCACerts)
 			Expect(ok).To(BeTrue())
 			Expect(len(contributor.CertPaths)).To(Equal(3))
-			Expect(contributor.CertPaths).To(Equal([]string{
-				"some/path/cert1.pem",
-				"some/path/cert2.pem",
-				"some/path/cert3.pem",
-			}))
+			Expect(contributor.CertPaths).To(ConsistOf(
+				ContainSubstring(filepath.Join("testdata", "SecureTrust_CA.pem")),
+				ContainSubstring(filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem")),
+				ContainSubstring(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem")),
+			))
 		})
 	})
 

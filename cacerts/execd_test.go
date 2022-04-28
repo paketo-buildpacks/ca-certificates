@@ -59,17 +59,17 @@ func testExecD(t *testing.T, context spec.G, it spec.S) {
 			execd.Bindings = []libcnb.Binding{
 				{
 					Type: "ca-certificates",
-					Path: "some-path",
+					Path: "testdata",
 					Secret: map[string]string{
-						"cert1.pem": "",
-						"cert2.pem": "",
+						"SecureTrust_CA.pem":           "",
+						"SecureTrust_CA_Duplicate.pem": "",
 					},
 				},
 				{
 					Type: "ca-certificates",
-					Path: "other-path",
+					Path: "testdata",
 					Secret: map[string]string{
-						"cert3.pem": "",
+						"Go_Daddy_Class_2_CA.pem": "",
 					},
 				},
 			}
@@ -102,11 +102,11 @@ func testExecD(t *testing.T, context spec.G, it spec.S) {
 				envFile, err := execd.Execute()
 				Expect(err).NotTo(HaveOccurred())
 				Expect(called).To(Equal(1))
-				Expect(certPaths).To(Equal([]string{
-					filepath.Join("other-path", "cert3.pem"),
-					filepath.Join("some-path", "cert1.pem"),
-					filepath.Join("some-path", "cert2.pem"),
-				}))
+				Expect(certPaths).To(ConsistOf(
+					ContainSubstring(filepath.Join("testdata", "SecureTrust_CA.pem")),
+					ContainSubstring(filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem")),
+					ContainSubstring(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem")),
+				))
 				Expect(envFile["SSL_CERT_DIR"]).To(Equal(certDir))
 			})
 		})
@@ -119,11 +119,11 @@ func testExecD(t *testing.T, context spec.G, it spec.S) {
 			it("appends to SSL_CERT_DIR a dir containing hash links", func() {
 				envFile, err := execd.Execute()
 				Expect(err).NotTo(HaveOccurred())
-				Expect(certPaths).To(Equal([]string{
-					filepath.Join("other-path", "cert3.pem"),
-					filepath.Join("some-path", "cert1.pem"),
-					filepath.Join("some-path", "cert2.pem"),
-				}))
+				Expect(certPaths).To(ConsistOf(
+					ContainSubstring(filepath.Join("testdata", "SecureTrust_CA.pem")),
+					ContainSubstring(filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem")),
+					ContainSubstring(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem")),
+				))
 				Expect(envFile["SSL_CERT_DIR"]).To(Equal("some-dir" + string(os.PathListSeparator) + certDir))
 			})
 		})
