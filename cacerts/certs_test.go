@@ -186,6 +186,41 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 			Expect(cacerts.CanonicalString("SOME VAL")).To(Equal("some val"))
 		})
 	})
+
+	context("SplitCerts", func() {
+		var dir string
+		it.Before(func() {
+			var err error
+			dir, err = ioutil.TempDir("", "multi-certs")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		it.After(func() {
+			Expect(os.RemoveAll(dir)).To(Succeed())
+		})
+
+		it("splits file with X certs into X new files", func() {
+			paths, err := cacerts.SplitCerts(filepath.Join("testdata", "multiple-certs.pem"), dir)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(paths).To(HaveLen(2))
+			Expect(paths[0]).To(BeARegularFile())
+			Expect(paths[1]).To(BeARegularFile())
+			Expect(paths).To(ConsistOf(
+				ContainSubstring("cert_0_multiple-certs.pem"),
+				ContainSubstring("cert_1_multiple-certs.pem"),
+			))
+		})
+		it("does not split file with 1 cert", func() {
+			paths, err := cacerts.SplitCerts(filepath.Join("testdata", "SecureTrust_CA.pem"), dir)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(paths).To(HaveLen(1))
+			Expect(paths[0]).To(Equal(filepath.Join("testdata", "SecureTrust_CA.pem")))
+		})
+		it("returns an error when PEM data cannot be read", func() {
+			_, err := cacerts.SplitCerts(filepath.Join("testdata", "SecureTrust_CA-corrupt.pem"), dir)
+			Expect(err).To(HaveOccurred())
+		})
+	})
 }
 
 type rdnSeq []rdnSET

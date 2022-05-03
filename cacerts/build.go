@@ -19,6 +19,7 @@ package cacerts
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"sort"
 	"strings"
 
@@ -47,6 +48,8 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 		return libcnb.BuildResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
 	}
 
+	certDir, err := ioutil.TempDir("", "ca-certificates")
+
 	var certPaths []string
 	var contributedHelper bool
 	for _, e := range context.Plan.Entries {
@@ -56,7 +59,13 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 			if err != nil {
 				return libcnb.BuildResult{}, fmt.Errorf("failed to decode CA certificate paths from plan entry:\n%w", err)
 			}
-			certPaths = append(certPaths, paths...)
+			for _, p := range paths {
+				if extraPaths, err := SplitCerts(p, certDir); err != nil {
+					return libcnb.BuildResult{}, fmt.Errorf("failed to split certificates at path %s \n%w", p, err)
+				} else {
+					certPaths = append(certPaths, extraPaths...)
+				}
+			}
 		case PlanEntryCACertsHelper:
 			if contributedHelper {
 				continue

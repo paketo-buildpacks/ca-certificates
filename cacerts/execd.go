@@ -52,18 +52,28 @@ func NewExecD(bindings libcnb.Bindings) *ExecD {
 // Execute adds certificates from bindings of type "ca-certificates" to the system truststore at launch time.
 func (e *ExecD) Execute() (map[string]string, error) {
 	env := map[string]string{}
-	paths := getsCertsFromBindings(e.Bindings)
-	if len(paths) == 0 {
-		return env, nil
-	}
+	var splitPaths []string
 	certDir, err := ioutil.TempDir("", "ca-certificates")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir\n%w", err)
 	}
-	if err := e.GenerateHashLinks(certDir, paths); err != nil {
+
+	paths := getsCertsFromBindings(e.Bindings)
+	if len(paths) == 0 || err != nil {
+		return env, err
+	}
+	for _, p := range paths {
+		if extraPaths, err := SplitCerts(p, certDir); err != nil {
+			return nil, fmt.Errorf("failed to split certificates at path %s \n%w", p, err)
+		} else {
+			splitPaths = append(splitPaths, extraPaths...)
+		}
+	}
+
+	if err := e.GenerateHashLinks(certDir, splitPaths); err != nil {
 		return nil, fmt.Errorf("failed to generate CA certficate symlinks\n%w", err)
 	}
-	e.Logger.Infof("Added %d additional CA certificate(s) to system truststore", len(paths))
+	e.Logger.Infof("Added %d additional CA certificate(s) to system truststore", len(splitPaths))
 
 	if v := e.GetEnv(EnvCAPath); v == "" {
 		env[EnvCAPath] = certDir

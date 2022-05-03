@@ -169,3 +169,35 @@ func CanonicalString(s string) string {
 	s = strings.ToLower(s)
 	return string(regexp.MustCompile(`[[:space:]]+`).ReplaceAll([]byte(s), []byte(" ")))
 }
+
+func SplitCerts(path string, certDir string) ([]string, error) {
+	var paths []string
+	var block *pem.Block
+	var rest []byte
+
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file at path %q\n%w", path, err)
+	}
+
+	block, rest = pem.Decode(raw)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM data")
+	} else if len(rest) == 0 {
+		// only one cert found, use original path
+		paths = append(paths, path)
+		return paths, nil
+	}
+	for ind := 0; block != nil; ind++ {
+		newCertPath := filepath.Join(certDir, fmt.Sprintf("cert_%d_%s", ind, filepath.Base(path)))
+		if os.WriteFile(newCertPath, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: block.Bytes}), 0777); err != nil {
+			return nil, fmt.Errorf("failed to write extra certficate to file\n%w", err)
+		}
+		paths = append(paths, newCertPath)
+		block, rest = pem.Decode(rest)
+		if block == nil && len(rest) > 0 {
+			return nil, fmt.Errorf("failed to decode PEM data")
+		}
+	}
+	return paths, nil
+}
