@@ -24,6 +24,15 @@ The buildpack configures trusted certs at both build and runtime by:
 
 To learn about the conventional meaning of `SSL_CERT_DIR` and `SSL_CERT_FILE` environment variables see the OpenSSL documentation for [SSL_CTX_load_verify_locations][s]. This buildpack may not work with tools that do not respect these environment variables.
 
+### Runtime Environment Support
+
+| Feature              | Supported       | Detail                                                                  |
+| -------------------- | --------------- | ---------------------------------------------------------------------------- |
+| read-only runtime container | No       | Symlinks and/or new files are written for certificates provided via binding at runtime. A read-only container will run if no cert bindings are present at runtime.  |
+| run as custom user          | Yes      | The custom user must be a member of the `CNB` group
+
+
+
 ## Bindings
 
 The buildpack optionally accepts the following bindings:
