@@ -53,14 +53,14 @@ func NewExecD(bindings libcnb.Bindings) *ExecD {
 func (e *ExecD) Execute() (map[string]string, error) {
 	env := map[string]string{}
 	var splitPaths []string
+
+	paths := getsCertsFromBindings(e.Bindings)
+	if len(paths) == 0 {
+		return env, nil
+	}
 	certDir, err := ioutil.TempDir("", "ca-certificates")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp dir\n%w", err)
-	}
-
-	paths := getsCertsFromBindings(e.Bindings)
-	if len(paths) == 0 || err != nil {
-		return env, err
 	}
 	for _, p := range paths {
 		if extraPaths, err := SplitCerts(p, certDir); err != nil {
