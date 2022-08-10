@@ -1,6 +1,6 @@
 module github.com/paketo-buildpacks/ca-certificates/v3
 
-go 1.17
+go 1.18
 
 require (
 	github.com/buildpacks/libcnb v1.26.0
@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.1.0 // indirect
+	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/creack/pty v1.1.18 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
@@ -20,8 +20,8 @@ require (
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
-	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4 // indirect
-	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
+	golang.org/x/net v0.0.0-20220809184613-07c6da5e1ced // indirect
+	golang.org/x/sys v0.0.0-20220808155132-1c4a2a72c664 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
