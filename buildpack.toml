@@ -19,7 +19,7 @@ api = "0.7"
   homepage = "https://github.com/paketo-buildpacks/ca-certificates"
   id = "paketo-buildpacks/ca-certificates"
   keywords = ["ca-certificates", "trust", "certificates"]
-  name = "Paketo CA Certificates Buildpack"
+  name = "Paketo Buildpack for CA Certificates"
   version = "{{.version}}"
   sbom-formats = ["application/vnd.cyclonedx+json", "application/vnd.syft+json"]
 
