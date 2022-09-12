@@ -25,8 +25,8 @@ github.com/mitchellh/hashstructure/v2 v2.0.2/go.mod h1:MG3aRVU/N29oo/V/IhBX8GR/z
 github.com/onsi/ginkgo/v2 v2.1.6 h1:Fx2POJZfKRQcM1pH49qSZiYeu319wji004qX+GDovrU=
 github.com/onsi/gomega v1.20.2 h1:8uQq0zMgLEfa0vRrrBgaJF2gyW9Da9BmfGV+OyUzfkY=
 github.com/onsi/gomega v1.20.2/go.mod h1:iYAIXgPSaDHak0LCMA+AWBpIKBr8WZicMxnE8luStNc=
-github.com/paketo-buildpacks/libpak v1.62.0 h1:fmRrKhRcUu5lpl0OwlSxEFsGbR57hWVQYAe1toKQImg=
-github.com/paketo-buildpacks/libpak v1.62.0/go.mod h1:nO5uvokr4wu0gT3M74KDsl/Q2DUKeSaIAHYM9HpGZD0=
+github.com/paketo-buildpacks/libpak v1.63.0 h1:LLBKp3QNXzpSIrz54dZqvxtZawFzZon69d7HGof2eKw=
+github.com/paketo-buildpacks/libpak v1.63.0/go.mod h1:F8SrPD3jZsSQrBVU0Tnunf9nZLDVZr8L/0QPTV4Ie64=
 github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
