@@ -1,6 +1,6 @@
 module github.com/paketo-buildpacks/ca-certificates/v3
 
-go 1.18
+go 1.20
 
 require (
 	github.com/buildpacks/libcnb v1.28.0
