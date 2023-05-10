@@ -34,7 +34,7 @@ import (
 )
 
 // Environment variables and defaults used by openssl to load trusted CA certificates
-// (see https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_default_verify_paths.html)
+// (see https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set_default_verify_paths.html)
 const (
 	// EnvCAPath is the environment variable that can be used to set CApath
 	EnvCAPath string = "SSL_CERT_DIR"
