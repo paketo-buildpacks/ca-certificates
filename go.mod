@@ -4,8 +4,8 @@ go 1.20
 
 require (
 	github.com/buildpacks/libcnb v1.29.0
-	github.com/onsi/gomega v1.27.10
-	github.com/paketo-buildpacks/libpak v1.66.2
+	github.com/onsi/gomega v1.28.0
+	github.com/paketo-buildpacks/libpak v1.67.0
 	github.com/sclevine/spec v1.4.0
 )
 
