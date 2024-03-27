@@ -6,6 +6,9 @@ codeowners:
 - path:  "*"
   owner: "@paketo-buildpacks/utilities-maintainers"
 
+helpers:
+  "bin/helper": "$GOMOD/cmd/helper"
+
 package:
   repositories:   ["docker.io/paketobuildpacks/ca-certificates","gcr.io/paketo-buildpacks/ca-certificates"]
   register:       true
