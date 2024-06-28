@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -41,9 +40,7 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 		var dir string
 
 		it.Before(func() {
-			var err error
-			dir, err = ioutil.TempDir("", "hash-links-test")
-			Expect(err).NotTo(HaveOccurred())
+			dir = t.TempDir()
 		})
 
 		it.After(func() {
@@ -57,23 +54,29 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 				filepath.Join("testdata", "SecureTrust_CA_Duplicate.pem"),
 			})
 			Expect(err).NotTo(HaveOccurred())
-			fis, err := ioutil.ReadDir(dir)
+			fis, err := os.ReadDir(dir)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(fis)).To(Equal(3))
 
-			Expect(fis[0].Mode() & os.ModeType).To(Equal(os.ModeSymlink))
+			info, err := fis[0].Info()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(info.Mode() & os.ModeType).To(Equal(os.ModeSymlink))
 			target, err := os.Readlink(filepath.Join(dir, fis[0].Name()))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(target).To(Equal("testdata/Go_Daddy_Class_2_CA.pem"))
 			Expect(fis[0].Name()).To(Equal("f081611a.0"))
 
-			Expect(fis[1].Mode() & os.ModeType).To(Equal(os.ModeSymlink))
+			info, err = fis[1].Info()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(info.Mode() & os.ModeType).To(Equal(os.ModeSymlink))
 			target, err = os.Readlink(filepath.Join(dir, fis[1].Name()))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(target).To(Equal("testdata/SecureTrust_CA.pem"))
 			Expect(fis[1].Name()).To(Equal("f39fc864.0"))
 
-			Expect(fis[2].Mode() & os.ModeType).To(Equal(os.ModeSymlink))
+			info, err = fis[2].Info()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(info.Mode() & os.ModeType).To(Equal(os.ModeSymlink))
 			target, err = os.Readlink(filepath.Join(dir, fis[2].Name()))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(target).To(Equal("testdata/SecureTrust_CA_Duplicate.pem"))
@@ -91,7 +94,7 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 
 	context("SubjectNameHash", func() {
 		it("matches openssl", func() {
-			raw, err := ioutil.ReadFile(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem"))
+			raw, err := os.ReadFile(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem"))
 			Expect(err).NotTo(HaveOccurred())
 			block, rest := pem.Decode(raw)
 			Expect(rest).To(BeEmpty())
@@ -103,7 +106,7 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 			// openssl x509 -hash -in ./cacerts/testdata/Go_Daddy_Class_2_CA.pem -> f081611a
 			Expect(hash).To(Equal(uint32(0xF081611A)))
 
-			raw, err = ioutil.ReadFile(filepath.Join("testdata", "SecureTrust_CA.pem"))
+			raw, err = os.ReadFile(filepath.Join("testdata", "SecureTrust_CA.pem"))
 			Expect(err).NotTo(HaveOccurred())
 			block, rest = pem.Decode(raw)
 			Expect(rest).To(BeEmpty())
@@ -121,7 +124,7 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 		context("cert contains non-UTF8String values", func() {
 			var subject []byte
 			it.Before(func() {
-				raw, err := ioutil.ReadFile(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem"))
+				raw, err := os.ReadFile(filepath.Join("testdata", "Go_Daddy_Class_2_CA.pem"))
 				Expect(err).NotTo(HaveOccurred())
 				block, rest := pem.Decode(raw)
 				Expect(rest).To(BeEmpty())
@@ -191,7 +194,7 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 		var dir string
 		it.Before(func() {
 			var err error
-			dir, err = ioutil.TempDir("", "multi-certs")
+			dir = t.TempDir()
 			Expect(err).NotTo(HaveOccurred())
 		})
 
