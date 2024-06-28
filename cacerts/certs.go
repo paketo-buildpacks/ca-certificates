@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -55,7 +54,7 @@ func GenerateHashLinks(dir string, certPaths []string) error {
 	hashes := map[uint32][]string{}
 	sort.Strings(certPaths)
 	for _, path := range certPaths {
-		raw, err := ioutil.ReadFile(path)
+		raw, err := os.ReadFile(path)
 		if err != nil {
 			return fmt.Errorf("failed to read file at path %q\n%w", path, err)
 		}
@@ -175,7 +174,7 @@ func SplitCerts(path string, certDir string) ([]string, error) {
 	var block *pem.Block
 	var rest []byte
 
-	raw, err := ioutil.ReadFile(path)
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file at path %q\n%w", path, err)
 	}
@@ -190,7 +189,7 @@ func SplitCerts(path string, certDir string) ([]string, error) {
 	}
 	for ind := 0; block != nil; ind++ {
 		newCertPath := filepath.Join(certDir, fmt.Sprintf("cert_%d_%s", ind, filepath.Base(path)))
-		if os.WriteFile(newCertPath, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: block.Bytes}), 0777); err != nil {
+		if err = os.WriteFile(newCertPath, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: block.Bytes}), 0777); err != nil {
 			return nil, fmt.Errorf("failed to write extra certficate to file\n%w", err)
 		}
 		paths = append(paths, newCertPath)

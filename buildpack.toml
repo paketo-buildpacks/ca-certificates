@@ -1,4 +1,4 @@
-# Copyright 2018-2020 the original author or authors.
+# Copyright 2018-2024 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,42 +27,32 @@ api = "0.7"
     type = "Apache-2.0"
     uri = "https://github.com/paketo-buildpacks/ca-certificates/blob/main/LICENSE"
 
-[[targets]]
-os = "linux"
-arch = "amd64"
-
-[[targets]]
-os = "linux"
-arch = "arm64"
-
 [metadata]
   include-files = ["LICENSE", "NOTICE", "README.md", "linux/amd64/bin/build", "linux/amd64/bin/detect", "linux/amd64/bin/main", "linux/amd64/bin/helper", "linux/arm64/bin/build", "linux/arm64/bin/detect", "linux/arm64/bin/main", "linux/arm64/bin/helper", "buildpack.toml"]
   pre-package = "scripts/build.sh"
 
-[metatdata]
-
-  [[metatdata.configurations]]
+  [[metadata.configurations]]
     build = true
-    default = false
+    default = "false"
     description = "Disable certificate helper layer to add certs at runtime"
     name = "BP_RUNTIME_CERT_BINDING_DISABLED"
 
-  [[metatdata.configurations]]
+  [[metadata.configurations]]
     build = true
-    default = false
+    default = "false"
     description = "Embed certificates into the image"
     name = "BP_EMBED_CERTS"
 
-  [[metatdata.configurations]]
+  [[metadata.configurations]]
     build = true
+    default = "true"
     description = "Deprecated: Enable/disable certificate helper layer to add certs at runtime"
     name = "BP_ENABLE_RUNTIME_CERT_BINDING"
 
-[[stacks]]
-  id = "io.buildpacks.stacks.bionic"
+[[targets]]
+  os = "linux"
+  arch = "amd64"
 
-[[stacks]]
-  id = "io.paketo.stacks.tiny"
-
-[[stacks]]
-  id = "*"
+[[targets]]
+  os = "linux"
+  arch = "arm64"

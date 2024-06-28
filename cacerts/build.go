@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 the original author or authors.
+ * Copyright 2018-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package cacerts
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 	"strings"
 
@@ -48,7 +48,10 @@ func (b Build) Build(context libcnb.BuildContext) (libcnb.BuildResult, error) {
 		return libcnb.BuildResult{}, fmt.Errorf("unable to create configuration resolver\n%w", err)
 	}
 
-	certDir, err := ioutil.TempDir("", "ca-certificates")
+	certDir, err := os.MkdirTemp("", "ca-certificates")
+	if err != nil {
+		return libcnb.BuildResult{}, fmt.Errorf("unable to create temporary directory for certificates\n%w", err)
+	}
 
 	var certPaths []string
 	var contributedHelper bool
