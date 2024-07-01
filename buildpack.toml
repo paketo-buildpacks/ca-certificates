@@ -49,6 +49,9 @@ api = "0.7"
     description = "Deprecated: Enable/disable certificate helper layer to add certs at runtime"
     name = "BP_ENABLE_RUNTIME_CERT_BINDING"
 
+[[stacks]]
+  id = "*"
+
 [[targets]]
   os = "linux"
   arch = "amd64"
