@@ -179,6 +179,10 @@ func SplitCerts(path string, certDir string) ([]string, error) {
 		return nil, fmt.Errorf("failed to read file at path %q\n%w", path, err)
 	}
 
+	if len(raw) == 0 {
+		return paths, nil // exit silently if raw is blank
+	}
+
 	block, rest = pem.Decode(raw)
 	if block == nil {
 		return nil, fmt.Errorf("failed to decode PEM data")

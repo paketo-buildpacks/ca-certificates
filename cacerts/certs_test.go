@@ -219,6 +219,11 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 			Expect(paths).To(HaveLen(1))
 			Expect(paths[0]).To(Equal(filepath.Join("testdata", "SecureTrust_CA.pem")))
 		})
+		it("exits silently if file is blank", func() {
+			paths, err := cacerts.SplitCerts(filepath.Join("testdata", "empty.pem"), dir)
+			Expect(err).To(BeNil())
+			Expect(paths).To(BeEmpty())
+		})
 		it("returns an error when PEM data cannot be read", func() {
 			_, err := cacerts.SplitCerts(filepath.Join("testdata", "SecureTrust_CA-corrupt.pem"), dir)
 			Expect(err).To(HaveOccurred())
