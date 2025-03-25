@@ -17,6 +17,7 @@
 package cacerts
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -194,6 +195,7 @@ func SplitCerts(path string, certDir string) ([]string, error) {
 		}
 		paths = append(paths, newCertPath)
 		block, rest = pem.Decode(rest)
+		rest = bytes.TrimSpace(rest) // ignore any lines containing all spaces
 		if block == nil && len(rest) > 0 {
 			return nil, fmt.Errorf("failed to decode PEM data")
 		}
