@@ -195,6 +195,7 @@ func SplitCerts(path string, certDir string) ([]string, error) {
 		}
 		paths = append(paths, newCertPath)
 		block, rest = pem.Decode(rest)
+		// openssl x509 < ... ignores whitespace, so does java's keytool
 		rest = bytes.TrimSpace(rest) // ignore any lines containing all spaces
 		if block == nil && len(rest) > 0 {
 			return nil, fmt.Errorf("failed to decode PEM data")
