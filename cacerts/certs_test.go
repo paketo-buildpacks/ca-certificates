@@ -223,6 +223,10 @@ func testCerts(t *testing.T, context spec.G, it spec.S) {
 			_, err := cacerts.SplitCerts(filepath.Join("testdata", "SecureTrust_CA-corrupt.pem"), dir)
 			Expect(err).To(HaveOccurred())
 		})
+		it("ignores trailing whitespace in the PEM data", func() {
+			_, err := cacerts.SplitCerts(filepath.Join("testdata", "USERTrust_ECC_CA_extra_whitespace.pem"), dir)
+			Expect(err).NotTo(HaveOccurred())
+		})
 	})
 }
 
