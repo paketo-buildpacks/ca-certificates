@@ -1,4 +1,7 @@
-# `gcr.io/paketo-buildpacks/ca-certificates`
+# Paketo Buildpack for CA Certificates
+
+## Buildpack ID: `paketo-buildpacks/ca-certificates`
+## Registry URLs: `docker.io/paketobuildpacks/ca-certificates`
 
 The Paketo Buildpack for CA Certificates is a Cloud Native Buildpack that adds CA certificates to the system truststore at build and runtime.
 
