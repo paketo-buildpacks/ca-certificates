@@ -146,8 +146,8 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			helperLayer, ok := result.Layers[0].(libpak.HelperLayerContributor)
 			Expect(ok).To(BeTrue())
 			Expect(helperLayer.Name()).To(Equal("helper"))
-			Expect(len(result.BOM.Entries)).To(Equal(1))
-			Expect(result.BOM.Entries[0].Name).To(Equal("helper"))
+			Expect(len(result.BOM.Entries)).To(Equal(1))           //nolint:staticcheck // hold off on the BOM migration for now
+			Expect(result.BOM.Entries[0].Name).To(Equal("helper")) //nolint:staticcheck // hold off on the BOM migration for now
 		})
 		it("contributes helper for API 0.7+", func() {
 			var err error
@@ -160,7 +160,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			helperLayer, ok := result.Layers[0].(libpak.HelperLayerContributor)
 			Expect(ok).To(BeTrue())
 			Expect(helperLayer.Name()).To(Equal("helper"))
-			Expect(len(result.BOM.Entries)).To(Equal(1))
+			Expect(len(result.BOM.Entries)).To(Equal(1)) //nolint:staticcheck // hold off on the BOM migration for now
 		})
 	})
 
