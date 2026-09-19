@@ -95,7 +95,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("BP_ENABLE_RUNTIME_CERT_BINDING is set to false", func() {
 			var result libcnb.DetectResult
 			it.Before(func() {
-				os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")
+				Expect(os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")).To(Succeed())
 
 				var err error
 				result, err = detect.Detect(ctx)
@@ -103,7 +103,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it.After(func() {
-				os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")
+				Expect(os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")).To(Succeed())
 			})
 
 			it("detect passes", func() {
@@ -136,7 +136,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("BP_RUNTIME_CERT_BINDING_DISABLED is set to true", func() {
 			var result libcnb.DetectResult
 			it.Before(func() {
-				os.Setenv("BP_RUNTIME_CERT_BINDING_DISABLED", "true")
+				Expect(os.Setenv("BP_RUNTIME_CERT_BINDING_DISABLED", "true")).To(Succeed())
 
 				var err error
 				result, err = detect.Detect(ctx)
@@ -144,7 +144,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it.After(func() {
-				os.Unsetenv("BP_RUNTIME_CERT_BINDING_DISABLED")
+				Expect(os.Unsetenv("BP_RUNTIME_CERT_BINDING_DISABLED")).To(Succeed())
 			})
 
 			it("detect passes", func() {
@@ -215,7 +215,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("BP_ENABLE_RUNTIME_CERT_BINDING is set to false", func() {
 			var result libcnb.DetectResult
 			it.Before(func() {
-				os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")
+				Expect(os.Setenv("BP_ENABLE_RUNTIME_CERT_BINDING", "false")).To(Succeed())
 
 				var err error
 				result, err = detect.Detect(ctx)
@@ -223,7 +223,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it.After(func() {
-				os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")
+				Expect(os.Unsetenv("BP_ENABLE_RUNTIME_CERT_BINDING")).To(Succeed())
 			})
 
 			it("detect passes", func() {
@@ -244,7 +244,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		context("BP_RUNTIME_CERT_BINDING_DISABLED is set to true", func() {
 			var result libcnb.DetectResult
 			it.Before(func() {
-				os.Setenv("BP_RUNTIME_CERT_BINDING_DISABLED", "true")
+				Expect(os.Setenv("BP_RUNTIME_CERT_BINDING_DISABLED", "true")).To(Succeed())
 
 				var err error
 				result, err = detect.Detect(ctx)
@@ -252,7 +252,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			})
 
 			it.After(func() {
-				os.Unsetenv("BP_RUNTIME_CERT_BINDING_DISABLED")
+				Expect(os.Unsetenv("BP_RUNTIME_CERT_BINDING_DISABLED")).To(Succeed())
 			})
 
 			it("detect passes", func() {
